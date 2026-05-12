@@ -12,7 +12,9 @@ class CollegeERPApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
+
       debugShowCheckedModeBanner: false,
 
       title: 'College ERP',
@@ -20,10 +22,10 @@ class CollegeERPApp extends StatelessWidget {
       // Theme
       theme: AppTheme.darkTheme,
 
-      // Initial Route
+      // First Screen
       initialRoute: '/login',
 
-      // App Routes
+      // Routes
       routes: AppRoutes.routes,
     );
   }
