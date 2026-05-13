@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
 import 'utils/theme.dart';
-import 'utils/routes.dart';
+import 'auth/splash_screen.dart';
 
 void main() {
   runApp(const CollegeERPApp());
@@ -12,21 +11,11 @@ class CollegeERPApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
-
       debugShowCheckedModeBanner: false,
-
-      title: 'College ERP',
-
-      // Theme
+      title: AppConstants.appName,
       theme: AppTheme.darkTheme,
-
-      // First Screen
-      initialRoute: '/login',
-
-      // Routes
-      routes: AppRoutes.routes,
+      home: const SplashScreen(),
     );
   }
 }

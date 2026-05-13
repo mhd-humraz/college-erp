@@ -6,7 +6,13 @@ class AppColors {
   static const Color card = Color(0xFF393E46);
   static const Color text = Color(0xFFEEEEEE);
 }
+class AppConstants {
+  static const String appName = "College ERP";
 
+  static const double defaultPadding = 20.0;
+
+  static const double borderRadius = 20.0;
+}
 class AppTheme {
   static ThemeData darkTheme = ThemeData(
     scaffoldBackgroundColor: AppColors.background,
