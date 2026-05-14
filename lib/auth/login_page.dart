@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../utils/theme.dart';
 import '../widgets/custom_button.dart';
 import 'forgot_password.dart';
+import '../services/api_service.dart';
+import '../admin/admin_dashboard.dart';
 
 class LoginPage extends StatefulWidget {
   final String role;
@@ -55,9 +57,56 @@ class _LoginPageState extends State<LoginPage>
   void _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    // TODO: implement auth logic
-    await Future.delayed(const Duration(seconds: 2));
-    setState(() => _isLoading = false);
+
+    try {
+      final data = await ApiService.post('/auth/login', {
+        'email': _emailController.text.trim(),
+        'password': _passwordController.text,
+        'role': widget.role,
+      });
+
+      // save token if your backend returns one
+      // ApiService.setToken(data['token']);
+
+      if (!mounted) return;
+
+      // navigate based on role
+      switch (widget.role) {
+        case 'Admin':
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (_) => const AdminDashboard()));
+          break;
+        case 'Student':
+          // Navigator.pushReplacement(context,
+          //     MaterialPageRoute(builder: (_) => const StudentDashboard()));
+          break;
+        case 'Teacher':
+          // Navigator.pushReplacement(context,
+          //     MaterialPageRoute(builder: (_) => const TeacherDashboard()));
+          break;
+        case 'HOD':
+          // Navigator.pushReplacement(context,
+          //     MaterialPageRoute(builder: (_) => const HodDashboard()));
+          break;
+        case 'Principal':
+          // Navigator.pushReplacement(context,
+          //     MaterialPageRoute(builder: (_) => const PrincipalDashboard()));
+          break;
+        default:
+          break;
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Invalid credentials',
+            style: TextStyle(fontFamily: 'Poppins')),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
