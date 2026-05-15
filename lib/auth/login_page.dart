@@ -4,6 +4,8 @@ import '../widgets/custom_button.dart';
 import 'forgot_password.dart';
 import '../services/api_service.dart';
 import '../admin/admin_dashboard.dart';
+import '../hod/hod_dashboard.dart';
+
 
 class LoginPage extends StatefulWidget {
   final String role;
@@ -56,59 +58,132 @@ class _LoginPageState extends State<LoginPage>
 
   void _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _isLoading = true);
 
-    try {
-      final data = await ApiService.post('/auth/login', {
-        'email': _emailController.text.trim(),
-        'password': _passwordController.text,
-        'role': widget.role,
-      });
+    await Future.delayed(const Duration(seconds: 1));
 
-      // save token if your backend returns one
-      // ApiService.setToken(data['token']);
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
 
+    // =========================
+    // HOD LOGIN
+    // =========================
+    if (widget.role == 'HOD' &&
+        email == 'hod@college.com' &&
+        password == 'hod123') {
       if (!mounted) return;
 
-      // navigate based on role
-      switch (widget.role) {
-        case 'Admin':
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (_) => const AdminDashboard()));
-          break;
-        case 'Student':
-          // Navigator.pushReplacement(context,
-          //     MaterialPageRoute(builder: (_) => const StudentDashboard()));
-          break;
-        case 'Teacher':
-          // Navigator.pushReplacement(context,
-          //     MaterialPageRoute(builder: (_) => const TeacherDashboard()));
-          break;
-        case 'HOD':
-          // Navigator.pushReplacement(context,
-          //     MaterialPageRoute(builder: (_) => const HodDashboard()));
-          break;
-        case 'Principal':
-          // Navigator.pushReplacement(context,
-          //     MaterialPageRoute(builder: (_) => const PrincipalDashboard()));
-          break;
-        default:
-          break;
-      }
-    } catch (e) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const HodDashboard(),
+        ),
+      );
+
+      return;
+    }
+
+    // =========================
+    // ADMIN LOGIN
+    // =========================
+    if (widget.role == 'Admin' &&
+        email == 'admin@college.com' &&
+        password == 'admin123') {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Invalid credentials',
-            style: TextStyle(fontFamily: 'Poppins')),
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const AdminDashboard(),
+        ),
+      );
+
+      return;
+    }
+
+    // =========================
+    // STUDENT LOGIN
+    // =========================
+    if (widget.role == 'Student' &&
+        email == 'student@college.com' &&
+        password == 'student123') {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Student Login Successful',
+            style: TextStyle(fontFamily: 'Poppins'),
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    // =========================
+    // TEACHER LOGIN
+    // =========================
+    if (widget.role == 'Teacher' &&
+        email == 'teacher@college.com' &&
+        password == 'teacher123') {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Teacher Login Successful',
+            style: TextStyle(fontFamily: 'Poppins'),
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    // =========================
+    // PRINCIPAL LOGIN
+    // =========================
+    if (widget.role == 'Principal' &&
+        email == 'principal@college.com' &&
+        password == 'principal123') {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Principal Login Successful',
+            style: TextStyle(fontFamily: 'Poppins'),
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    // =========================
+    // INVALID LOGIN
+    // =========================
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Invalid credentials',
+          style: TextStyle(fontFamily: 'Poppins'),
+        ),
         backgroundColor: Colors.redAccent,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ));
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
 
+    setState(() => _isLoading = false);
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
