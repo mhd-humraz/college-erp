@@ -5,6 +5,7 @@ import 'forgot_password.dart';
 import '../services/api_service.dart';
 import '../admin/admin_dashboard.dart';
 import '../hod/hod_dashboard.dart';
+import '../teacher/teacher_dashboard.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -130,12 +131,10 @@ class _LoginPageState extends State<LoginPage>
         password == 'teacher123') {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Teacher Login Successful',
-            style: TextStyle(fontFamily: 'Poppins'),
-          ),
+            Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const TeacherDashboard(),
         ),
       );
 
