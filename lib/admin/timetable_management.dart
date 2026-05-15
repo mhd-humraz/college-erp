@@ -59,7 +59,7 @@ class _TimetableManagementPageState extends State<TimetableManagementPage> {
               style: TextStyle(fontFamily: 'Poppins', color: AppColors.text, fontWeight: FontWeight.w600)),
           content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
             DropdownButtonFormField<String>(
-              value: selectedDay,
+              initialValue: selectedDay,
               dropdownColor: AppColors.background,
               style: const TextStyle(fontFamily: 'Poppins', color: AppColors.text, fontSize: 14),
               decoration: InputDecoration(
@@ -144,7 +144,7 @@ class _TimetableManagementPageState extends State<TimetableManagementPage> {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: _days.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (_, i) {
                 final day = _days[i];
                 final selected = _selectedDay == day;

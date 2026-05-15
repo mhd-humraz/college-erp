@@ -266,7 +266,7 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       title: Text(title, style: const TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.text)),
       subtitle: Text(subtitle, style: TextStyle(fontFamily: 'Poppins', fontSize: 12, color: AppColors.text.withOpacity(0.45))),
-      trailing: Switch(value: value, onChanged: onChanged, activeColor: AppColors.primary),
+      trailing: Switch(value: value, onChanged: onChanged, activeThumbColor: AppColors.primary),
     );
   }
 

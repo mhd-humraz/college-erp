@@ -77,7 +77,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
                 _dialogField(passCtrl, 'Password', Icons.lock_outline, obscure: true),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: selectedRole,
+                  initialValue: selectedRole,
                   dropdownColor: AppColors.background,
                   style: const TextStyle(fontFamily: 'Poppins', color: AppColors.text, fontSize: 14),
                   decoration: _dropdownDecoration('Role'),
@@ -163,7 +163,7 @@ class _UserManagementPageState extends State<UserManagementPage> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _roles.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (_, i) {
                   final role = _roles[i];
                   final selected = _selectedRole == role;

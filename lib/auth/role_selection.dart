@@ -69,8 +69,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
         context,
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
-          pageBuilder: (_, __, ___) => LoginPage(role: role),
-          transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          pageBuilder: (_, _, _) => LoginPage(role: role),
+          transitionsBuilder: (_, anim, _, child) => SlideTransition(
             position: Tween<Offset>(
               begin: const Offset(1, 0),
               end: Offset.zero,
@@ -181,7 +181,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
 
                         return AnimatedBuilder(
                           animation: _controller,
-                          builder: (_, __) => FadeTransition(
+                          builder: (_, _) => FadeTransition(
                             opacity: itemAnim,
                             child: ScaleTransition(
                               scale: itemAnim,
