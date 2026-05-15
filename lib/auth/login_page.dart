@@ -4,8 +4,8 @@ import '../widgets/custom_button.dart';
 import 'forgot_password.dart';
 import '../services/api_service.dart';
 import '../admin/admin_dashboard.dart';
-import '../hod/hod_dashboard.dart':
-
+import '../hod/hod_dashboard.dart';
+import '../principal/principal_dashboard.dart';
 
 class LoginPage extends StatefulWidget {
   final String role;
