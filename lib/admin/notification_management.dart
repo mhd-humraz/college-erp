@@ -76,7 +76,7 @@ class _NotificationManagementPageState extends State<NotificationManagementPage>
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: selectedTarget,
+              initialValue: selectedTarget,
               dropdownColor: AppColors.background,
               style: const TextStyle(fontFamily: 'Poppins', color: AppColors.text, fontSize: 14),
               decoration: InputDecoration(
