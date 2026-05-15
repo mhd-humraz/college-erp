@@ -1,20 +1,13 @@
 import 'package:flutter/material.dart';
+import '../utils/theme.dart';
 
-class AppColors {
-  static const Color primary = Color(0xFF00ADB5);
-  static const Color background = Color(0xFF222831);
-  static const Color card = Color(0xFF393E46);
-  static const Color text = Color(0xFFEEEEEE);
-}
-
+// correct
 class AssignmentUploadPage extends StatefulWidget {
   const AssignmentUploadPage({super.key});
-
   @override
-  State<AssignmentUploadPage> createState() =>
-      _AssignmentUploadPageState();
+  State<AssignmentUploadPage> createState() => _AssignmentUploadPageState();
 }
-
+ 
 class _AssignmentUploadPageState
     extends State<AssignmentUploadPage> {
 

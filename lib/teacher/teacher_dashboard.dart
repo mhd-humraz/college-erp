@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import '../utils/theme.dart';
 import '../teacher/attendance_entry.dart';
 import '../teacher/announcements.dart';
-import '../teacher/assignments.dart';
-import '../teacher/leave_letter.dart';
-import '../teacher/mark_entry.dart';
+import '../teacher/assignment_upload.dart';
+import '../teacher/leave_management.dart';
+import '../teacher/marks_entry.dart';
 import '../teacher/student_list.dart';
 import '../teacher/study_materials.dart';
 import '../teacher/timetable.dart';
 
 
 class TeacherDashboard extends StatefulWidget {
-  final Map<String, dynamic> user;
+  final Map<String, dynamic> user; 
 
   const TeacherDashboard({super.key, required this.user});
 
@@ -27,7 +27,7 @@ class _TeacherDashboardState extends State<TeacherDashboard>
     {'title': 'Timetable', 'icon': Icons.calendar_month_rounded},
     {'title': 'Attendance', 'icon': Icons.check_circle_rounded},
     {'title': 'Assignments', 'icon': Icons.assignment_rounded},
-    {'title': 'Leave Letter', 'icon': Icons.edit_document_rounded},
+    {'title': 'Leave Management', 'icon': Icons.description_rounded},
     {'title': 'Mark Entry', 'icon': Icons.grade_rounded},
     {'title': 'Study Materials', 'icon': Icons.menu_book_rounded},
     {'title': 'Student List', 'icon': Icons.people_rounded},
@@ -150,8 +150,57 @@ class _TeacherDashboardState extends State<TeacherDashboard>
                         title: item['title'],
                         icon: item['icon'],
                         onTap: () {
-                          // TODO: navigate to each page
-                          // Navigator.push(context, MaterialPageRoute(builder: (_) => item['page']));
+
+                          Widget page;
+
+                          switch (item['title']) {
+
+                            case 'Timetable':
+                              page = const TimetablePage();
+                              break;
+
+                            case 'Attendance':
+                              page = const AttendanceEntry();
+                              break;
+
+                            case 'Assignments':
+                              page = const AssignmentUploadPage();
+                              break;
+
+                            case 'Leave Management':
+                              page = const LeaveManagementPage();
+                              break;
+
+                            case 'Mark Entry':
+                              page = const MarkEntryPage();
+                              break;
+
+                            case 'Study Materials':
+                              page = const StudyMaterialPage();
+                              break;
+
+                            case 'Student List':
+                              page = const StudentListPage();
+                              break;
+
+                            case 'Announcements':
+                              page = const AnnouncementsPage();
+                              break;
+
+                            default:
+                              page = const Scaffold(
+                                body: Center(
+                                  child: Text('Page Not Found'),
+                                ),
+                              );
+                          }
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => page,
+                            ),
+                          );
                         },
                       ),
                     ),

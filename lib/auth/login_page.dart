@@ -78,7 +78,7 @@ class _LoginPageState extends State<LoginPage>
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => const HodDashboard(),
+          builder: (_) => const Scaffold(body: Center(child: Text('HOD - Coming Soon'))),
         ),
       );
 
@@ -125,21 +125,27 @@ class _LoginPageState extends State<LoginPage>
 
     // =========================
     // TEACHER LOGIN
-    // =========================
     if (widget.role == 'Teacher' &&
-        email == 'teacher@college.com' &&
-        password == 'teacher123') {
-      if (!mounted) return;
+      _emailController.text.trim() == 'teacher@college.com' &&
+      _passwordController.text == 'teacher123') {
+    if (!mounted) return;
 
-            Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const TeacherDashboard(),
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TeacherDashboard(
+          user: {
+            'name': 'Teacher',
+            'teacherId': 'TCH001',
+            'email': 'teacher@college.com',
+          },
         ),
-      );
+      ),
+    );
 
-      return;
-    }
+    if (mounted) setState(() => _isLoading = false);
+    return;
+  }
 
     // =========================
     // PRINCIPAL LOGIN
