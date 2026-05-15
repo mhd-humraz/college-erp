@@ -160,7 +160,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                 );
                 return AnimatedBuilder(
                   animation: _controller,
-                  builder: (_, __) => FadeTransition(
+                  builder: (_, _) => FadeTransition(
                     opacity: anim,
                     child: ScaleTransition(
                       scale: anim,
