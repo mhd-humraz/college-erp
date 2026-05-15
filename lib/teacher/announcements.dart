@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
-class AppColors {
-  static const Color primary = Color(0xFF00ADB5);
-  static const Color background = Color(0xFF222831);
-  static const Color card = Color(0xFF393E46);
-  static const Color text = Color(0xFFEEEEEE);
-}
+ 
+import '../utils/theme.dart';
 
 class AnnouncementsPage extends StatefulWidget {
   const AnnouncementsPage({super.key});
