@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../utils/theme.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -19,13 +19,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// ================= COLORS =================
-class AppColors {
-  static const Color primary = Color(0xFF00ADB5);
-  static const Color background = Color(0xFF222831);
-  static const Color card = Color(0xFF393E46);
-  static const Color text = Color(0xFFEEEEEE);
-}
+ 
 
 /// ================= CONSTANTS =================
 class AppConstants {
@@ -94,6 +88,18 @@ class _FeePaymentPageState extends State<FeePaymentPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.background,
+
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+    },
+  ),
+
         title: const Text(
           'Fee Payment',
           style: TextStyle(
