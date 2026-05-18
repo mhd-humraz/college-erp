@@ -10,6 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+// Routes - make sure all have .js extension
 app.use('/api/auth', require('./routes/auth.js'));
 app.use('/api/users', require('./routes/users.js'));
 app.use('/api/courses', require('./routes/courses.js'));
@@ -18,6 +19,13 @@ app.use('/api/notifications', require('./routes/notifications.js'));
 app.use('/api/timetable', require('./routes/timetable.js'));
 app.use('/api/reports', require('./routes/reports.js'));
 app.use('/api/settings', require('./routes/settings.js'));
+app.use('/api/attendance', require('./routes/attendance.js'));  // Added .js
+app.use('/api/staff', require('./routes/staff.js'));  // Added .js
+app.use('/api/upload', require('./routes/upload.js'));  // Added .js
+app.use('/api/fees', require('./routes/fees.js'));  // Added .js
+app.use('/api/exams', require('./routes/exams.js'));  // Added .js
+app.use('/api/events', require('./routes/events.js'));  // Added .js
+app.use('/api/library', require('./routes/library.js'));  // Added .js
 
 // Health check
 app.get('/', (req, res) => {
