@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 
+import 'fee_payment_page.dart';
+
 // IMPORT PAGES
 
 import 'profile_page.dart';
@@ -18,13 +20,24 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'College ERP',
-      theme: ThemeData(
-        fontFamily: 'Poppins',
-      ),
-      home: const StudentDashboard(),
-    );
+  debugShowCheckedModeBanner: false,
+  title: 'College ERP',
+
+  theme: ThemeData(
+    fontFamily: 'Poppins',
+
+    scaffoldBackgroundColor: const Color(0xFF222831),
+
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xFF222831),
+      elevation: 0,
+    ),
+  ),
+
+  home: const StudentDashboard(),
+);
+    
+      
   }
 }
 
@@ -119,6 +132,9 @@ class _StudentDashboardState
 
       case "Attendance":
         page = const AttendancePage();
+        break;
+      case "Semester Fee":
+        page = const FeePaymentPage();
         break;
     }
 
