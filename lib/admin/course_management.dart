@@ -1,112 +1,46 @@
 import 'package:flutter/material.dart';
-import '../utils/theme.dart';
-import '../services/api_service.dart';
+import '../utils/theme.dart';  // ✅ correct
 
-class CourseManagementPage extends StatefulWidget {
-  const CourseManagementPage({super.key});
-
+class CourseManagement extends StatefulWidget {
+  const CourseManagement({super.key});
   @override
-  State<CourseManagementPage> createState() => _CourseManagementPageState();
+  State<CourseManagement> createState() => _CourseManagementState();
 }
 
-class _CourseManagementPageState extends State<CourseManagementPage> {
-  List<dynamic> _courses = [];
-  bool _isLoading = true;
-  String _error = '';
+class _CourseManagementState extends State<CourseManagement> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  String _selectedDept = 'BCA';
+
+  final List<String> _depts = ['BCA', 'BBA', 'BCom', 'Physics', 'Chemistry', 'Maths'];
+
+  final Map<String, List<Map<String, dynamic>>> _subjects = {
+    'BCA': [
+      {'name': 'C Programming', 'code': 'BCA101', 'credits': 4, 'semester': 1, 'teacher': 'Prof. Rao', 'type': 'Core'},
+      {'name': 'Digital Systems', 'code': 'BCA102', 'credits': 3, 'semester': 1, 'teacher': 'Dr. Meena', 'type': 'Core'},
+      {'name': 'Data Structures', 'code': 'BCA201', 'credits': 4, 'semester': 2, 'teacher': 'Prof. Kumar', 'type': 'Core'},
+      {'name': 'Web Technologies', 'code': 'BCA202', 'credits': 3, 'semester': 2, 'teacher': 'Dr. Arun', 'type': 'Core'},
+      {'name': 'Database Systems', 'code': 'BCA301', 'credits': 4, 'semester': 3, 'teacher': 'Prof. Nair', 'type': 'Core'},
+      {'name': 'Python Prog.', 'code': 'BCA302E', 'credits': 3, 'semester': 3, 'teacher': 'Dr. Patel', 'type': 'Elective'},
+    ],
+    'BBA': [
+      {'name': 'Principles of Mgmt', 'code': 'BBA101', 'credits': 4, 'semester': 1, 'teacher': 'Prof. Das', 'type': 'Core'},
+      {'name': 'Business Economics', 'code': 'BBA102', 'credits': 3, 'semester': 1, 'teacher': 'Dr. Verma', 'type': 'Core'},
+    ],
+  };
 
   @override
   void initState() {
     super.initState();
-    _fetchCourses();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
-  Future<void> _fetchCourses() async {
-    setState(() { _isLoading = true; _error = ''; });
-    try {
-      final data = await ApiService.get('/courses');
-      setState(() { _courses = data; _isLoading = false; });
-    } catch (e) {
-      setState(() { _error = e.toString(); _isLoading = false; });
-    }
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
-  Future<void> _deleteCourse(String id) async {
-    try {
-      await ApiService.delete('/courses/$id');
-      _fetchCourses();
-      _showSnack('Course deleted');
-    } catch (e) {
-      _showSnack('Failed to delete course', isError: true);
-    }
-  }
-
-  void _showSnack(String msg, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg, style: const TextStyle(fontFamily: 'Poppins')),
-      backgroundColor: isError ? Colors.redAccent : AppColors.primary,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ));
-  }
-
-  void _showCourseDialog({dynamic course}) {
-    final nameCtrl = TextEditingController(text: course?['name'] ?? '');
-    final codeCtrl = TextEditingController(text: course?['code'] ?? '');
-    final creditsCtrl = TextEditingController(text: course?['credits']?.toString() ?? '');
-    final isEdit = course != null;
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: AppColors.card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(isEdit ? 'Edit Course' : 'Add Course',
-            style: const TextStyle(fontFamily: 'Poppins', color: AppColors.text, fontWeight: FontWeight.w600)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _dialogField(nameCtrl, 'Course Name', Icons.book_outlined),
-            const SizedBox(height: 12),
-            _dialogField(codeCtrl, 'Course Code', Icons.tag_rounded),
-            const SizedBox(height: 12),
-            _dialogField(creditsCtrl, 'Credits', Icons.star_outline_rounded, type: TextInputType.number),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(fontFamily: 'Poppins', color: AppColors.text.withOpacity(0.5))),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-            onPressed: () async {
-              Navigator.pop(context);
-              final body = {
-                'name': nameCtrl.text.trim(),
-                'code': codeCtrl.text.trim(),
-                'credits': int.tryParse(creditsCtrl.text) ?? 0,
-              };
-              try {
-                if (isEdit) {
-                  await ApiService.put('/courses/${course['_id'] ?? course['id']}', body);
-                  _showSnack('Course updated');
-                } else {
-                  await ApiService.post('/courses', body);
-                  _showSnack('Course added');
-                }
-                _fetchCourses();
-              } catch (e) {
-                _showSnack('Operation failed', isError: true);
-              }
-            },
-            child: Text(isEdit ? 'Update' : 'Add',
-                style: const TextStyle(fontFamily: 'Poppins', color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
+  List<Map<String, dynamic>> get _currentSubjects => _subjects[_selectedDept] ?? [];
 
   @override
   Widget build(BuildContext context) {
@@ -114,99 +48,278 @@ class _CourseManagementPageState extends State<CourseManagementPage> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.text, size: 20),
-          onPressed: () => Navigator.pop(context),
+        title: const Text('Course Management', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.w700)),
+        iconTheme: const IconThemeData(color: AppColors.text),
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppColors.primary,
+          labelColor: AppColors.primary,
+          unselectedLabelColor: Colors.grey,
+          tabs: const [Tab(text: 'Subjects'), Tab(text: 'Academic Year')],
         ),
-        title: const Text('Course Management',
-            style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 18, color: AppColors.text)),
-        centerTitle: true,
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh_rounded, color: AppColors.primary), onPressed: _fetchCourses),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppColors.primary,
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: const Text('Add Subject', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+        onPressed: () => _showAddSubjectSheet(),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildSubjectsTab(),
+          _buildAcademicYearTab(),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        onPressed: () => _showCourseDialog(),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : _error.isNotEmpty
-              ? _buildError()
-              : _courses.isEmpty
-                  ? _buildEmpty()
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _courses.length,
-                      itemBuilder: (_, i) => _buildCourseCard(_courses[i]),
-                    ),
     );
   }
 
-  Widget _buildCourseCard(dynamic course) {
+  Widget _buildSubjectsTab() {
+    Map<int, List<Map<String, dynamic>>> bySemester = {};
+    for (var s in _currentSubjects) {
+      int sem = s['semester'];
+      bySemester.putIfAbsent(sem, () => []).add(s);
+    }
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: SizedBox(
+            height: 38,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _depts.length,
+              itemBuilder: (_, i) {
+                final d = _depts[i];
+                final selected = _selectedDept == d;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedDept = d),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: selected ? AppColors.primary : AppColors.card,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(d, style: TextStyle(color: selected ? Colors.white : Colors.grey, fontSize: 13, fontWeight: FontWeight.w600)),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: bySemester.entries.map((entry) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
+                          child: Text('Semester ${entry.key}', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 13)),
+                        ),
+                        const SizedBox(width: 8),
+                        Text('${entry.value.length} subjects', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  ...entry.value.map((s) => _buildSubjectTile(s)),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubjectTile(Map<String, dynamic> s) {
+    final isElective = s['type'] == 'Elective';
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(16)),
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: isElective ? Border.all(color: const Color(0xFFFF9800).withOpacity(0.4)) : null,
+      ),
       child: Row(
         children: [
           Container(
-            width: 46, height: 46,
-            decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.12), borderRadius: BorderRadius.circular(14)),
-            child: const Icon(Icons.book_rounded, color: AppColors.primary, size: 22),
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isElective ? const Color(0xFFFF9800).withOpacity(0.15) : AppColors.primary.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              isElective ? Icons.star_rounded : Icons.book_rounded,
+              color: isElective ? const Color(0xFFFF9800) : AppColors.primary,
+              size: 20,
+            ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(course['name'] ?? '',
-                  style: const TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
-              const SizedBox(height: 3),
-              Text('Code: ${course['code'] ?? ''} · Credits: ${course['credits'] ?? ''}',
-                  style: TextStyle(fontFamily: 'Poppins', fontSize: 12, color: AppColors.text.withOpacity(0.45))),
-            ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: Text(s['name'], style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w600, fontSize: 14))),
+                    if (isElective)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(color: const Color(0xFFFF9800).withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
+                        child: const Text('Elective', style: TextStyle(color: Color(0xFFFF9800), fontSize: 10, fontWeight: FontWeight.w600)),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text('${s['code']} • ${s['credits']} Credits', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text('Faculty: ${s['teacher']}', style: const TextStyle(color: Colors.grey, fontSize: 11)),
+              ],
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.edit_outlined, color: AppColors.primary, size: 20),
-            onPressed: () => _showCourseDialog(course: course),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
-            onPressed: () => _deleteCourse(course['_id'] ?? course['id']),
+          PopupMenuButton<String>(
+            color: AppColors.card,
+            icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 18),
+            itemBuilder: (_) => [
+              const PopupMenuItem(value: 'edit', child: Text('Edit', style: TextStyle(color: AppColors.text))),
+              const PopupMenuItem(value: 'assign', child: Text('Assign Teacher', style: TextStyle(color: AppColors.text))),
+              const PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Colors.red))),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildError() => Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-    Icon(Icons.wifi_off_rounded, color: AppColors.text.withOpacity(0.3), size: 48),
-    const SizedBox(height: 12),
-    Text('Failed to load courses', style: TextStyle(fontFamily: 'Poppins', color: AppColors.text.withOpacity(0.5))),
-    const SizedBox(height: 12),
-    ElevatedButton(onPressed: _fetchCourses,
-        style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-        child: const Text('Retry', style: TextStyle(fontFamily: 'Poppins', color: Colors.white))),
-  ]));
+  Widget _buildAcademicYearTab() {
+    final years = [
+      {'year': '2024–25', 'status': 'Current', 'semesters': 2, 'start': 'Jun 2024', 'end': 'Apr 2025'},
+      {'year': '2023–24', 'status': 'Completed', 'semesters': 2, 'start': 'Jun 2023', 'end': 'Apr 2024'},
+      {'year': '2022–23', 'status': 'Completed', 'semesters': 2, 'start': 'Jun 2022', 'end': 'Apr 2023'},
+    ];
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.primary.withOpacity(0.3))),
+          child: Row(
+            children: [
+              const Icon(Icons.calendar_today_rounded, color: AppColors.primary),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Current Academic Year', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text('2024 – 2025', style: TextStyle(color: AppColors.primary, fontSize: 18, fontWeight: FontWeight.w800)),
+                  ],
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                onPressed: () {},
+                child: const Text('Edit', style: TextStyle(color: Colors.white, fontSize: 12)),
+              ),
+            ],
+          ),
+        ),
+        ...years.map((y) {
+          final isCurrent = y['status'] == 'Current';
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(14)),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(y['year'] as String, style: const TextStyle(color: AppColors.text, fontWeight: FontWeight.w700, fontSize: 15)),
+                      Text('${y['start']} → ${y['end']}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isCurrent ? AppColors.primary.withOpacity(0.15) : Colors.grey.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(y['status'] as String, style: TextStyle(color: isCurrent ? AppColors.primary : Colors.grey, fontSize: 12, fontWeight: FontWeight.w600)),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
 
-  Widget _buildEmpty() => Center(
-    child: Text('No courses found', style: TextStyle(fontFamily: 'Poppins', color: AppColors.text.withOpacity(0.4))),
-  );
+  void _showAddSubjectSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.card,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 24, right: 24, top: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Add Subject', style: TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 20),
+            _field('Subject Name', Icons.book_rounded),
+            const SizedBox(height: 12),
+            _field('Subject Code', Icons.tag_rounded),
+            const SizedBox(height: 12),
+            Row(children: [
+              Expanded(child: _field('Credits', Icons.star_rounded)),
+              const SizedBox(width: 12),
+              Expanded(child: _field('Semester', Icons.looks_one_rounded)),
+            ]),
+            const SizedBox(height: 12),
+            _field('Assign Faculty', Icons.person_rounded),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Add Subject', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
 
-  Widget _dialogField(TextEditingController ctrl, String hint, IconData icon, {TextInputType type = TextInputType.text}) {
+  Widget _field(String label, IconData icon) {
     return TextField(
-      controller: ctrl, keyboardType: type,
-      style: const TextStyle(fontFamily: 'Poppins', color: AppColors.text, fontSize: 14),
+      style: const TextStyle(color: AppColors.text),
       decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(fontFamily: 'Poppins', color: AppColors.text.withOpacity(0.3), fontSize: 13),
-        prefixIcon: Icon(icon, color: AppColors.primary, size: 18),
-        filled: true, fillColor: AppColors.background,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        prefixIcon: Icon(icon, color: Colors.grey),
+        filled: true,
+        fillColor: AppColors.background,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       ),
     );
   }

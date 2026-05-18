@@ -5,11 +5,9 @@ import 'forgot_password.dart';
 import '../services/api_service.dart';
 import '../admin/admin_dashboard.dart';
 import '../hod/hod_dashboard.dart';
-<<<<<<< HEAD
-import '../principal/principal_dashboard.dart';
-=======
+import '../teacher/teacher_dashboard.dart';
 
->>>>>>> main
+
 
 class LoginPage extends StatefulWidget {
   final String role;
@@ -65,131 +63,111 @@ class _LoginPageState extends State<LoginPage>
 
     setState(() => _isLoading = true);
 
-    await Future.delayed(const Duration(seconds: 1));
-
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    // =========================
-    // HOD LOGIN
-    // =========================
-    if (widget.role == 'HOD' &&
-        email == 'hod@college.com' &&
-        password == 'hod123') {
+    try {
+      // Call your backend API
+      final response = await ApiService.login(email, password);
+      
       if (!mounted) return;
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const HodDashboard(),
-        ),
-      );
+      // Check if the user's role matches the selected role
+      if (response['user']['role'].toLowerCase() != widget.role.toLowerCase()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Invalid role. You are logged in as ${response['user']['role']}',
+              style: const TextStyle(fontFamily: 'Poppins'),
+            ),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+        setState(() => _isLoading = false);
+        return;
+      }
 
-      return;
-    }
+      final user = response['user'];
 
-    // =========================
-    // ADMIN LOGIN
-    // =========================
-    if (widget.role == 'Admin' &&
-        email == 'admin@college.com' &&
-        password == 'admin123') {
+      // Navigate based on role
+      switch (widget.role.toLowerCase()) {
+        case 'admin':
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AdminDashboard(user: user),
+            ),
+          );
+          break;
+        case 'hod':
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => HODDashboard(user: user),
+            ),
+          );
+          break;
+        case 'teacher':
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TeacherDashboard(user: user),
+            ),
+          );
+          break;
+        case 'student':
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Welcome ${user['name']}!',
+                style: const TextStyle(fontFamily: 'Poppins'),
+              ),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          );
+          // Navigate to student dashboard
+          break;
+        default:
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Login Successful',
+                style: TextStyle(fontFamily: 'Poppins'),
+              ),
+            ),
+          );
+      }
+    } catch (e) {
       if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const AdminDashboard(),
-        ),
-      );
-
-      return;
-    }
-
-    // =========================
-    // STUDENT LOGIN
-    // =========================
-    if (widget.role == 'Student' &&
-        email == 'student@college.com' &&
-        password == 'student123') {
-      if (!mounted) return;
-
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Student Login Successful',
-            style: TextStyle(fontFamily: 'Poppins'),
+            e.toString().replaceFirst('Exception: ', ''),
+            style: const TextStyle(fontFamily: 'Poppins'),
+          ),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       );
-
-      return;
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-
-    // =========================
-    // TEACHER LOGIN
-    // =========================
-    if (widget.role == 'Teacher' &&
-        email == 'teacher@college.com' &&
-        password == 'teacher123') {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Teacher Login Successful',
-            style: TextStyle(fontFamily: 'Poppins'),
-          ),
-        ),
-      );
-
-      return;
-    }
-
-    // =========================
-    // PRINCIPAL LOGIN
-    // =========================
-    if (widget.role == 'Principal' &&
-        email == 'principal@college.com' &&
-        password == 'principal123') {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Principal Login Successful',
-            style: TextStyle(fontFamily: 'Poppins'),
-          ),
-        ),
-      );
-
-      return;
-    }
-
-    // =========================
-    // INVALID LOGIN
-    // =========================
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
-          'Invalid credentials',
-          style: TextStyle(fontFamily: 'Poppins'),
-        ),
-        backgroundColor: Colors.redAccent,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-    );
-
-    setState(() => _isLoading = false);
-  }
-  
+  }  
   @override
   Widget build(BuildContext context) {
+    // ... (keep your existing build method exactly the same)
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(

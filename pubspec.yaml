@@ -12,7 +12,8 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   http: ^1.2.1
-  
+  shared_preferences: ^2.2.2  # Add this line
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -23,7 +24,7 @@ flutter:
 
   assets:
     - assets/fonts/
-    - assets/images/
+    # - assets/images/
   fonts:
     - family: Poppins
       fonts:
