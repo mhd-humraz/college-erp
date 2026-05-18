@@ -19,6 +19,15 @@
     "nodemailer": "^6.9.8"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/mongoose": "^5.11.96",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^25.9.0",
+    "@types/nodemailer": "^8.0.0",
+    "nodemon": "^3.0.2",
+    "typescript": "^6.0.3"
   }
 }

@@ -8,25 +8,34 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ── Routes ──
-app.use('/api/auth',          require('./routes/auth'));
-app.use('/api/users',         require('./routes/users'));
-app.use('/api/staff',         require('./routes/staff'));
-app.use('/api/students',      require('./routes/students'));
-app.use('/api/departments',   require('./routes/departments'));
-app.use('/api/courses',       require('./routes/courses'));
-app.use('/api/timetable',     require('./routes/timetable'));
-app.use('/api/attendance',    require('./routes/attendance'));
-app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/fees',          require('./routes/fees'));
-app.use('/api/exams',         require('./routes/exams'));
-app.use('/api/events',        require('./routes/events'));
-app.use('/api/library',       require('./routes/library'));
-app.use('/api/reports',       require('./routes/reports'));
-app.use('/api/settings',      require('./routes/settings'));
-app.use('/api/roles',         require('./routes/roles'));
+// Import middlewares
+const auth = require('./middleware/auth');
+const adminAuth = require('./middleware/adminAuth');
 
-// Health check
+// ── Public Routes (no auth required) ──
+app.use('/api/auth', require('./routes/auth'));
+
+// ── Protected Routes (any authenticated user) ──
+app.use('/api/users', auth, require('./routes/users'));
+// app.use('/api/profile', auth, require('./routes/profile')); // ← COMMENT THIS LINE OUT
+
+// ── Admin Only Routes ──
+app.use('/api/staff', adminAuth, require('./routes/staff'));
+app.use('/api/students', adminAuth, require('./routes/students'));
+app.use('/api/departments', adminAuth, require('./routes/departments'));
+app.use('/api/courses', adminAuth, require('./routes/courses'));
+app.use('/api/timetable', adminAuth, require('./routes/timetable'));
+app.use('/api/attendance', adminAuth, require('./routes/attendance'));
+app.use('/api/notifications', adminAuth, require('./routes/notifications'));
+app.use('/api/fees', adminAuth, require('./routes/fees'));
+app.use('/api/exams', adminAuth, require('./routes/exams'));
+app.use('/api/events', adminAuth, require('./routes/events'));
+app.use('/api/library', adminAuth, require('./routes/library'));
+app.use('/api/reports', adminAuth, require('./routes/reports'));
+app.use('/api/settings', adminAuth, require('./routes/settings'));
+app.use('/api/roles', adminAuth, require('./routes/roles'));
+
+// Health check (public)
 app.get('/', (req, res) => {
   res.json({ message: '🚀 MESCAS ERP API is running!', version: '1.0.0' });
 });
@@ -36,8 +45,9 @@ mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('✅ MongoDB connected');
     await seedAdmin();
-    app.listen(process.env.PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${process.env.PORT}`);
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   })
   .catch(err => {

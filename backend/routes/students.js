@@ -6,7 +6,7 @@ const csv = require('csvtojson');
 const fs = require('fs');
 const path = require('path');
 const User = require('../models/User');
-const auth = require('../middleware/auth');
+const adminAuth = require('../middleware/adminAuth'); // ← CHANGE THIS LINE
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -20,7 +20,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // GET /api/students
-router.get('/', auth, async (req, res) => {
+router.get('/', adminAuth, async (req, res) => {  // ← CHANGE auth to adminAuth
   try {
     const { department, semester } = req.query;
     const filter = { role: 'Student' };
@@ -32,7 +32,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // POST /api/students/add - manual
-router.post('/add', auth, async (req, res) => {
+router.post('/add', adminAuth, async (req, res) => {  // ← CHANGE auth to adminAuth
   try {
     const { name, email, phone, guardianPhone, department, semester, batch, studentId, password } = req.body;
     if (!name || !studentId || !password) {
@@ -55,8 +55,7 @@ router.post('/add', auth, async (req, res) => {
 });
 
 // POST /api/students/upload-csv
-// CSV: name, email, phone, guardianPhone, department, semester, batch, studentId, password
-router.post('/upload-csv', auth, upload.single('file'), async (req, res) => {
+router.post('/upload-csv', adminAuth, upload.single('file'), async (req, res) => {  // ← CHANGE auth to adminAuth
   try {
     if (!req.file) return res.status(400).json({ message: 'No CSV file uploaded' });
     const rows = await csv().fromFile(req.file.path);
@@ -96,7 +95,7 @@ router.post('/upload-csv', auth, upload.single('file'), async (req, res) => {
 });
 
 // DELETE /api/students/:id
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', adminAuth, async (req, res) => {  // ← CHANGE auth to adminAuth
   try {
     await User.findByIdAndDelete(req.params.id);
     res.json({ message: 'Student deleted' });
