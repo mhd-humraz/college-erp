@@ -3,7 +3,7 @@
 A centralized **College ERP (Enterprise Resource Planning) System** developed using **Flutter**, **Node.js**, and **MongoDB** to manage academic and administrative activities digitally.
 
 ---
-noted 
+ 
 
 # 📌 Project Aim
 
