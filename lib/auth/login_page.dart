@@ -3,10 +3,9 @@ import '../utils/theme.dart';
 import '../widgets/custom_button.dart';
 import 'forgot_password.dart';
 import '../services/api_service.dart';
-import '../admin/admin_dashboard.dart';
-import '../hod/hod_dashboard.dart';
+import '../admin/admin_dashboard.dart'; 
 import '../teacher/teacher_dashboard.dart';
-
+import '../hod/hod_dashboard.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -68,7 +67,10 @@ class _LoginPageState extends State<LoginPage>
 
     try {
       // Call your backend API
-      final response = await ApiService.login(email, password);
+      final response = await ApiService.login(
+                      identifier: email,
+                      password: password,
+                    );
       
       if (!mounted) return;
 
@@ -107,9 +109,10 @@ class _LoginPageState extends State<LoginPage>
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => HODDashboard(user: user),
+              builder: (_) => const HodDashboard()
             ),
           );
+
           break;
         case 'teacher':
           Navigator.pushReplacement(
