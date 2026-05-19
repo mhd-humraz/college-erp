@@ -5,10 +5,16 @@ const userSchema = new mongoose.Schema({
   email:        { type: String, lowercase: true, trim: true },
   password:     { type: String, required: true },
   phone:        { type: String },
+  
   role:         { type: String, enum: ['Admin', 'Student', 'Teacher', 'HOD', 'Principal', 'Library'], required: true },
+  
   department:   { type: String },
+  
   isActive:     { type: Boolean, default: true },
   isFirstLogin: { type: Boolean, default: true },
+
+  // 👇 ADD THIS ONE NEW FIELD:
+  profileImage: { type: String, default: '' },  // <-- ADD THIS LINE
 
   // Student specific
   studentId:    { type: String, unique: true, sparse: true },
@@ -27,4 +33,4 @@ const userSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', userSchema);  
