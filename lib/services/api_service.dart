@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,7 +20,7 @@ class ApiService {
 
 
   // ==============================
-  // LOGIN
+  // LOGIN ✅ KEEP AS-IS
   // ==============================
 
   static Future<Map<String, dynamic>> login({
@@ -66,13 +67,27 @@ class ApiService {
 
 
   // ==============================
-  // TOKEN & AUTH
+  // TOKEN ✅ KEEP AS-IS
   // ==============================
 
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
+
+  /// Get headers with token (helper for new methods)
+  static Future<Map<String, String>> _getHeaders() async {
+    final token = await getToken();
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'x-auth-token': token,
+    };
+  }
+
+
+  // ==============================
+  // CURRENT USER ✅ KEEP AS-IS
+  // ==============================
 
   static Future<Map<String, dynamic>> getCurrentUser() async {
     final token = await getToken();
@@ -114,8 +129,128 @@ class ApiService {
   }
 
 
+  // ==========================================
+  // 🆕 HOD DASHBOARD API (NEW!)
+  // ==========================================
+
+  /// Fetch all HOD Dashboard data in one call
+  /// Returns: { stats, attendanceOverview, facultyMonitoring, pendingApprovals }
+  static Future<Map<String, dynamic>?> fetchHODDashboard() async {
+    try {
+      print('📊 Fetching HOD Dashboard...');
+
+      final headers = await _getHeaders();
+      
+      final response = await http.get(
+        Uri.parse('$baseUrl/dashboard/hod'),
+        headers: headers,
+      ).timeout(const Duration(seconds: 15));
+
+      print('📡 Dashboard Response Status: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        
+        if (data['success'] == true) {
+          print('✅ Dashboard data loaded!');
+          return data['data'];
+        } else {
+          print('❌ API returned success: false');
+          return null;
+        }
+      } else if (response.statusCode == 401) {
+        print('⚠️ Unauthorized - Token expired');
+        return null;
+      } else if (response.statusCode == 403) {
+        print('🚫 Forbidden - Not HOD');
+        return null;
+      } else {
+        print('❌ Error ${response.statusCode}: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Dashboard Error: $e');
+      return null;
+    }
+  }
+
+
+  // ==========================================
+  // 🆕 APPROVAL API (NEW!)
+  // ==========================================
+
+  /// Approve or Reject a leave request
+  /// [requestId] - ID of the leave request
+  /// [action] - 'approve' or 'reject'
+  static Future<bool> processApproval({
+    required String requestId,
+    required String action,
+  }) async {
+    try {
+      print('🔄 Processing $action for: $requestId');
+
+      final response = await put('/approvals/$requestId', {
+        'action': action,
+      });
+
+      if (response['success'] == true) {
+        print('✅ Request ${action}d!');
+        return true;
+      }
+
+      print('❌ Approval failed');
+      return false;
+
+    } catch (e) {
+      print('❌ Approval Error: $e');
+      return false;
+    }
+  }
+
+
+  // ==========================================
+  // 🆕 UPLOAD API (NEW!)
+  // ==========================================
+
+  /// Upload profile image
+  /// Returns image URL string on success, null on failure
+  static Future<String?> uploadProfileImage(File imageFile) async {
+    try {
+      final token = await getToken();
+
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/upload/profile'),
+      );
+
+      request.headers['x-auth-token'] = token ?? '';
+      request.files.add(
+        await http.MultipartFile.fromPath('profileImage', imageFile.path),
+      );
+
+      print('📤 Uploading profile image...');
+
+      final response = await request.send().timeout(const Duration(seconds: 30));
+      final responseBody = await response.stream.bytesToString();
+      final result = jsonDecode(responseBody);
+
+      if (result['success'] == true) {
+        print('✅ Image uploaded: ${result['imageUrl']}');
+        return result['imageUrl'];
+      }
+
+      print('❌ Upload failed: $result');
+      return null;
+
+    } catch (e) {
+      print('❌ Upload Error: $e');
+      return null;
+    }
+  }
+
+
   // ==============================
-  // USERS (Existing)
+  // USERS ✅ KEEP AS-IS
   // ==============================
 
   static Future<List<dynamic>> getUsers() async {
@@ -274,7 +409,7 @@ class ApiService {
 
 
   // ==============================
-  // GENERIC HTTP METHODS (Existing)
+  // GENERIC GET ✅ KEEP AS-IS
   // ==============================
 
   static Future<dynamic> get(String endpoint) async {
@@ -293,7 +428,15 @@ class ApiService {
     }
   }
 
-  static Future<dynamic> post(String endpoint, Map<String, dynamic> data) async {
+
+  // ==============================
+  // GENERIC POST ✅ KEEP AS-IS
+  // ==============================
+
+  static Future<dynamic> post(
+      String endpoint,
+      Map<String, dynamic> data) async {
+
     final token = await getToken();
     try {
       final response = await http.post(
@@ -310,7 +453,15 @@ class ApiService {
     }
   }
 
-  static Future<dynamic> put(String endpoint, Map<String, dynamic> data) async {
+
+  // ==============================
+  // GENERIC PUT ✅ KEEP AS-IS
+  // ==============================
+
+  static Future<dynamic> put(
+      String endpoint,
+      Map<String, dynamic> data) async {
+
     final token = await getToken();
     try {
       final response = await http.put(
@@ -326,6 +477,11 @@ class ApiService {
       throw Exception('PUT request failed: $e');
     }
   }
+
+
+  // ==============================
+  // GENERIC DELETE ✅ KEEP AS-IS
+  // ==============================
 
   static Future<dynamic> delete(String endpoint) async {
     final token = await getToken();
@@ -345,7 +501,32 @@ class ApiService {
 
 
   // ==============================
-  // RESPONSE HANDLER
+  // LOGOUT ✅ KEEP AS-IS
+  // ==============================
+
+  static Future<void> logout() async {
+
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.remove('token');
+    await prefs.remove('user');
+  }
+
+
+  // ==============================
+  // CHECK LOGIN ✅ KEEP AS-IS
+  // ==============================
+
+  static Future<bool> isLoggedIn() async {
+
+    final token = await getToken();
+
+    return token != null;
+  }
+
+
+  // ==============================
+  // RESPONSE HANDLER ✅ KEEP AS-IS
   // ==============================
 
   static dynamic _handleResponse(http.Response response) {

@@ -8,6 +8,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 👇 Serve uploaded files (profile images, etc.)
+app.use('/uploads', express.static('uploads'));
+
 // Import middlewares
 const auth = require('./middleware/auth');
 const adminAuth = require('./middleware/adminAuth');
@@ -17,7 +20,11 @@ app.use('/api/auth', require('./routes/auth'));
 
 // ── Protected Routes (any authenticated user) ──
 app.use('/api/users', auth, require('./routes/users'));
-// app.use('/api/profile', auth, require('./routes/profile')); // ← COMMENT THIS LINE OUT
+
+// 🆕 HOD Dashboard Routes (NEW!)
+app.use('/api/dashboard', auth, require('./routes/dashboard'));
+app.use('/api/approvals', auth, require('./routes/approvals'));
+app.use('/api/upload', auth, require('./routes/upload'));
 
 // ── Admin Only Routes ──
 app.use('/api/staff', adminAuth, require('./routes/staff'));
