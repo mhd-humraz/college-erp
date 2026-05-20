@@ -3,15 +3,15 @@ import '../utils/theme.dart';
 import '../services/api_service.dart';
 import '../models/leave_model.dart';
 
-class LeaveManagementPage extends StatefulWidget {
-  const LeaveManagementPage({super.key});
+class LeaveManagementHOD extends StatefulWidget {
+  const LeaveManagementHOD({super.key});
 
   @override
-  State<LeaveManagementPage> createState() => _LeaveManagementPageState();
+  State<LeaveManagementHOD> createState() => _LeaveManagementHODState();
 }
 
-class _LeaveManagementPageState extends State<LeaveManagementPage> {
-  List<LeaveRequest> pendingStudentLeaves = [];
+class _LeaveManagementHODState extends State<LeaveManagementHOD> {
+  List<LeaveRequest> pendingTeacherLeaves = [];
   List<LeaveRequest> myLeaveHistory = [];
   bool _isLoading = true;
 
@@ -24,6 +24,8 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
   Future<void> _fetchLeaves() async {
     setState(() => _isLoading = true);
     try {
+      // This is the EXACT SAME API call the Teacher makes!
+      // But because the HOD is logged in, the backend returns Teacher leaves.
       final data = await ApiService.getLeaves();
       
       List<LeaveRequest> pending = [];
@@ -31,18 +33,22 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
 
       for (var item in data) {
         final leave = LeaveRequest.fromJson(item);
-        // If the teacher is the approver and it's pending, it's a student request
-        if (leave.approverRole == 'Teacher' && leave.status == 'Pending') {
+        // HOD approves Teacher leaves
+        if (leave.approverRole == 'HOD' && leave.status == 'Pending') {
           pending.add(leave);
         } 
-        // If the teacher is the applicant, it's their own history
-        else if (leave.applicantRole == 'Teacher') {
-          history.add(leave);
+        // HOD's own leave history (if they apply to Principal)
+        else if (leave.applicantRole == 'HOD' || leave.applicantRole == 'Teacher') {
+           // We also show already approved/rejected teacher leaves in history if needed,
+           // but for now let's just show the HOD's own applications
+           if (leave.applicantRole == 'HOD') {
+             history.add(leave);
+           }
         }
       }
 
       setState(() {
-        pendingStudentLeaves = pending;
+        pendingTeacherLeaves = pending;
         myLeaveHistory = history;
         _isLoading = false;
       });
@@ -71,7 +77,7 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: AppColors.card,
-          title: const Text("Apply for Leave (to HOD)", style: TextStyle(color: AppColors.text)),
+          title: const Text("Apply for Leave (to Principal)", style: TextStyle(color: AppColors.text)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -93,7 +99,7 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
                   await ApiService.applyLeave(fromDate: fromController.text, toDate: toController.text, reason: reasonController.text);
                   Navigator.pop(context);
                   _fetchLeaves();
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Leave Applied to HOD")));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Leave Applied to Principal")));
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
                 }
@@ -113,12 +119,12 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
       appBar: AppBar(
         backgroundColor: AppColors.background, elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text("Leave Management", style: TextStyle(color: AppColors.text)),
+        title: const Text("HOD Leave Management", style: TextStyle(color: AppColors.text)),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add),
-        onPressed: _showApplyDialog, // Teacher applying for own leave
+        onPressed: _showApplyDialog, // HOD applying for own leave
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
@@ -127,18 +133,18 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  // ── SECTION 1: PENDING STUDENT REQUESTS ──
-                  const Text("Pending Student Requests", style: TextStyle(color: AppColors.primary, fontSize: 18, fontWeight: FontWeight.bold)),
+                  // ── SECTION 1: PENDING TEACHER REQUESTS ──
+                  const Text("Pending Teacher Requests", style: TextStyle(color: AppColors.primary, fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
-                  if (pendingStudentLeaves.isEmpty)
+                  if (pendingTeacherLeaves.isEmpty)
                     const Text("No pending requests", style: TextStyle(color: Colors.white38))
                   else
-                    ...pendingStudentLeaves.map((leave) => _buildApprovalCard(leave)),
+                    ...pendingTeacherLeaves.map((leave) => _buildApprovalCard(leave)),
 
                   const SizedBox(height: 30),
 
-                  // ── SECTION 2: MY LEAVE HISTORY (DATED) ──
-                  const Text("My Leave History (to HOD)", style: TextStyle(color: AppColors.primary, fontSize: 18, fontWeight: FontWeight.bold)),
+                  // ── SECTION 2: MY LEAVE HISTORY ──
+                  const Text("My Leave History", style: TextStyle(color: AppColors.primary, fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   if (myLeaveHistory.isEmpty)
                     const Text("No leave history", style: TextStyle(color: Colors.white38))
@@ -150,7 +156,7 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
     );
   }
 
-  // Card for Approving Student Leaves
+  // Card for Approving Teacher Leaves
   Widget _buildApprovalCard(LeaveRequest leave) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -160,7 +166,7 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(leave.applicantName, style: const TextStyle(color: AppColors.text, fontSize: 18, fontWeight: FontWeight.bold)),
-          Text("Dept: ${leave.department} | Sem: ${leave.semester ?? 'N/A'}", style: const TextStyle(color: Colors.grey)),
+          Text("Dept: ${leave.department}", style: const TextStyle(color: Colors.grey)),
           const Divider(color: Colors.white24),
           Text("From: ${leave.fromDate}", style: const TextStyle(color: AppColors.text)),
           Text("To: ${leave.toDate}", style: const TextStyle(color: AppColors.text)),
@@ -177,7 +183,7 @@ class _LeaveManagementPageState extends State<LeaveManagementPage> {
     );
   }
 
-  // Card for Teacher's Own Leave History
+  // Card for HOD's Own Leave History
   Widget _buildHistoryCard(LeaveRequest leave) {
     Color statusColor = leave.status == 'Approved' ? Colors.green : leave.status == 'Rejected' ? Colors.red : Colors.orange;
     

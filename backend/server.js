@@ -14,34 +14,48 @@ app.use('/uploads', express.static('uploads'));
 // Import middlewares
 const auth = require('./middleware/auth');
 const adminAuth = require('./middleware/adminAuth');
+const roleAuth = require('./middleware/roleAuth'); // 🆕 IMPORT NEW MIDDLEWARE
 
 // ── Public Routes (no auth required) ──
 app.use('/api/auth', require('./routes/auth'));
 
-// ── Protected Routes (any authenticated user) ──
+// ── General Protected Routes (any authenticated user) ──
 app.use('/api/users', auth, require('./routes/users'));
-
-// 🆕 HOD Dashboard Routes (NEW!)
 app.use('/api/dashboard', auth, require('./routes/dashboard'));
 app.use('/api/approvals', auth, require('./routes/approvals'));
 app.use('/api/upload', auth, require('./routes/upload'));
 
-// ── Admin Only Routes ──
-app.use('/api/staff', adminAuth, require('./routes/staff'));
-app.use('/api/students', adminAuth, require('./routes/students'));
-app.use('/api/departments', adminAuth, require('./routes/departments'));
-app.use('/api/courses', adminAuth, require('./routes/courses'));
-app.use('/api/timetable', adminAuth, require('./routes/timetable'));
-app.use('/api/attendance', adminAuth, require('./routes/attendance'));
-app.use('/api/notifications', adminAuth, require('./routes/notifications'));
-app.use('/api/fees', adminAuth, require('./routes/fees'));
-app.use('/api/exams', adminAuth, require('./routes/exams'));
-app.use('/api/events', adminAuth, require('./routes/events'));
-app.use('/api/library', adminAuth, require('./routes/library'));
-app.use('/api/reports', adminAuth, require('./routes/reports'));
-app.use('/api/settings', adminAuth, require('./routes/settings'));
-app.use('/api/roles', adminAuth, require('./routes/roles'));
+// ── Admin ONLY Routes (Strictly adminAuth) ──
+// Core system structures that Teachers/Principals shouldn't change
+app.use('/api/departments', auth, adminAuth, require('./routes/departments'));
+app.use('/api/courses', auth, adminAuth, require('./routes/courses'));
+app.use('/api/fees', auth, adminAuth, require('./routes/fees'));
+app.use('/api/events', auth, adminAuth, require('./routes/events'));
+app.use('/api/library', auth, adminAuth, require('./routes/library'));
+app.use('/api/reports', auth, adminAuth, require('./routes/reports'));
+app.use('/api/settings', auth, adminAuth, require('./routes/settings'));
+app.use('/api/roles', auth, adminAuth, require('./routes/roles'));
 
+// ── Admin & Principal Routes ──
+// Admin and Principal can create/manage Teachers (Staff)
+app.use('/api/staff', auth, roleAuth(['Admin', 'Principal']), require('./routes/staff'));
+
+// ── Admin, Principal & Teacher Routes ──
+// Teachers need access to these to do their job (view/add students, mark attendance, etc.)
+app.use('/api/students', auth, roleAuth(['Admin', 'Principal', 'Teacher']), require('./routes/students'));
+app.use('/api/timetable', auth, roleAuth(['Admin', 'Principal', 'Teacher']), require('./routes/timetable'));
+app.use('/api/attendance', auth, roleAuth(['Admin', 'Principal', 'Teacher']), require('./routes/attendance'));
+app.use('/api/notifications', auth, roleAuth(['Admin', 'Principal', 'Teacher']), require('./routes/notifications'));
+app.use('/api/exams', auth, roleAuth(['Admin', 'Principal', 'Teacher']), require('./routes/exams'));
+
+// 🆕 NEW: Teacher-specific features
+app.use('/api/marks', auth, roleAuth(['Admin', 'Principal', 'Teacher']), require('./routes/marks'));
+app.use('/api/assignments', auth, roleAuth(['Admin', 'Principal', 'Teacher']), require('./routes/assignments'));
+app.use('/api/materials', auth, roleAuth(['Admin', 'Principal', 'Teacher']), require('./routes/materials'));
+
+// ── Admin, Principal, Teacher & Student Routes ──
+// Students apply for leave, Teachers approve student leave / apply for their own, HOD approves Teacher leave
+app.use('/api/leave', auth, roleAuth(['Admin', 'Principal', 'HOD', 'Teacher', 'Student']), require('./routes/leaves'));
 // Health check (public)
 app.get('/', (req, res) => {
   res.json({ message: '🚀 MESCAS ERP API is running!', version: '1.0.0' });

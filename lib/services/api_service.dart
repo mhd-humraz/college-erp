@@ -408,6 +408,44 @@ class ApiService {
   }
 
 
+  // ==========================================================
+  // 🆕 LEAVE MANAGEMENT (ADDED FOR TEACHER & STUDENT)
+  // ==========================================================
+
+  /// Get Leaves (Automatically filters based on logged-in user role)
+  static Future<List<dynamic>> getLeaves() async {
+    final response = await get('/leave');
+    if (response is Map && response.containsKey('data')) {
+      return response['data'] as List<dynamic>;
+    }
+    if (response is List) {
+      return response;
+    }
+    return [];
+  }
+
+  /// Apply for Leave (Works for both Student and Teacher)
+  static Future<Map<String, dynamic>> applyLeave({
+    required String fromDate,
+    required String toDate,
+    required String reason,
+  }) async {
+    return await post('/leave/apply', {
+      'fromDate': fromDate,
+      'toDate': toDate,
+      'reason': reason,
+    });
+  }
+
+  /// Approve or Reject a Leave
+  static Future<Map<String, dynamic>> updateLeaveStatus({
+    required String leaveId,
+    required String status, // 'Approved' or 'Rejected'
+  }) async {
+    return await put('/leave/$leaveId', {'status': status});
+  }
+
+
   // ==============================
   // GENERIC GET ✅ KEEP AS-IS
   // ==============================
@@ -497,31 +535,6 @@ class ApiService {
     } catch (e) {
       throw Exception('DELETE request failed: $e');
     }
-  }
-
-
-  // ==============================
-  // LOGOUT ✅ KEEP AS-IS
-  // ==============================
-
-  static Future<void> logout() async {
-
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.remove('token');
-    await prefs.remove('user');
-  }
-
-
-  // ==============================
-  // CHECK LOGIN ✅ KEEP AS-IS
-  // ==============================
-
-  static Future<bool> isLoggedIn() async {
-
-    final token = await getToken();
-
-    return token != null;
   }
 
 
