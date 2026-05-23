@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/theme.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -18,8 +19,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
- 
 
 /// ================= CONSTANTS =================
 class AppConstants {
@@ -90,15 +89,28 @@ class _FeePaymentPageState extends State<FeePaymentPage> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
 
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new,
-            color: Colors.white,
+        /// ✅ UPDATED BACK BUTTON: Mini rounded box with "<" chevron
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12, top: 8, bottom: 8),
+          child: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.card, // Matches your secondary background
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: AppColors.text,
+                  size: 16,
+                ),
+              ),
+            ),
           ),
-          onPressed: () {
-            Navigator.pop(context);
-    },
-  ),
+        ),
 
         title: const Text(
           'Fee Payment',

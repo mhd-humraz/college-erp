@@ -1,3 +1,6 @@
+
+
+
 import 'package:flutter/material.dart';
 
 // IMPORT DASHBOARD PAGE
@@ -467,17 +470,8 @@ class _AssignmentPageState
                   GestureDetector(
 
                     onTap: () {
-
-                      Navigator.pushReplacement(
-
-                        context,
-
-                        MaterialPageRoute(
-                          builder:
-                              (context) =>
-                                  const StudentDashboard(),
-                        ),
-                      );
+                      // MODIFIED: Pop to previous dashboard instance
+                      Navigator.pop(context);
                     },
 
                     child: Container(

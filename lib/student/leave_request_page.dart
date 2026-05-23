@@ -1,5 +1,4 @@
 // leave_request_page.dart
-
 import 'package:flutter/material.dart';
 
 void main() {
@@ -183,19 +182,29 @@ class _LeaveRequestPageState
               Row(
                 children: [
 
-                  /// BACK BUTTON
-                  Container(
-                    padding: const EdgeInsets.all(12),
+                  /// BACK BUTTON (Updated to match your app style & pop correctly)
+                  GestureDetector(
+                    onTap: () {
+                      // ✅ FIXED: Pops back to the already opened dashboard list
+                      Navigator.pop(context);
+                    },
 
-                    decoration: BoxDecoration(
-                      color: secondary,
-                      borderRadius:
-                          BorderRadius.circular(14),
-                    ),
+                    child: Container(
+                      width: 40,
+                      height: 40,
 
-                    child: Icon(
-                      Icons.arrow_back,
-                      color: light,
+                      decoration: BoxDecoration(
+                        color: secondary,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+
+                      child: const Center(
+                        child: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Color(0xFFEEEEEE),
+                          size: 16,
+                        ),
+                      ),
                     ),
                   ),
 

@@ -1,7 +1,5 @@
 // exam_result_page.dart
-
 import 'package:flutter/material.dart';
-import 'student_dashboard.dart';
 
 void main() {
   runApp(const MyApp());
@@ -61,34 +59,28 @@ class ExamResultPage extends StatelessWidget {
               Row(
                 children: [
 
-                  /// BACK BUTTON
-                  InkWell(
+                  /// BACK BUTTON (Updated to match your app style & pop correctly)
+                  GestureDetector(
                     onTap: () {
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const StudentDashboard(),
-                        ),
-                      );
+                      // ✅ FIXED: Pops back to the already opened dashboard list
+                      Navigator.pop(context);
                     },
 
                     child: Container(
-                      padding:
-                          const EdgeInsets.all(12),
+                      width: 40,
+                      height: 40,
 
                       decoration: BoxDecoration(
                         color: secondary,
-
-                        borderRadius:
-                            BorderRadius.circular(
-                                14),
+                        borderRadius: BorderRadius.circular(12),
                       ),
 
-                      child: Icon(
-                        Icons.arrow_back,
-                        color: light,
+                      child: const Center(
+                        child: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Color(0xFFEEEEEE),
+                          size: 16,
+                        ),
                       ),
                     ),
                   ),

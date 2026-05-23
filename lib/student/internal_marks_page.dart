@@ -1,5 +1,3 @@
-// internal_mark_page.dart
-
 import 'package:flutter/material.dart';
 import 'student_dashboard.dart';
 
@@ -74,33 +72,26 @@ class InternalMarkPage extends StatelessWidget {
                 children: [
 
                   /// BACK BUTTON
-                  InkWell(
+                  GestureDetector(
                     onTap: () {
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const StudentDashboard(),
-                        ),
-                      );
+                      Navigator.pop(context);
                     },
 
                     child: Container(
-                      padding:
-                          const EdgeInsets.all(12),
+                      width: 42,
+                      height: 42,
 
                       decoration: BoxDecoration(
                         color: secondary,
 
                         borderRadius:
-                            BorderRadius.circular(
-                                14),
+                            BorderRadius.circular(12),
                       ),
 
-                      child: Icon(
-                        Icons.arrow_back,
-                        color: light,
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Color(0xFFEEEEEE),
+                        size: 18,
                       ),
                     ),
                   ),
@@ -204,7 +195,7 @@ class InternalMarkPage extends StatelessWidget {
                           secondary,
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 14),
 
                         markCard(
                           "Monthly Activity",
@@ -215,7 +206,7 @@ class InternalMarkPage extends StatelessWidget {
                           secondary,
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 14),
 
                         markCard(
                           "Project Submission",
@@ -226,7 +217,7 @@ class InternalMarkPage extends StatelessWidget {
                           secondary,
                         ),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 14),
 
                         markCard(
                           "Note Submission",
@@ -239,6 +230,7 @@ class InternalMarkPage extends StatelessWidget {
                       ],
                     )
 
+                  /// ✅ REMOVED all SizedBox gaps — cards now fill full width
                   : Row(
                       children: [
 
@@ -253,8 +245,6 @@ class InternalMarkPage extends StatelessWidget {
                           ),
                         ),
 
-                        const SizedBox(width: 18),
-
                         Expanded(
                           child: markCard(
                             "Monthly Activity",
@@ -266,8 +256,6 @@ class InternalMarkPage extends StatelessWidget {
                           ),
                         ),
 
-                        const SizedBox(width: 18),
-
                         Expanded(
                           child: markCard(
                             "Project Submission",
@@ -278,8 +266,6 @@ class InternalMarkPage extends StatelessWidget {
                             secondary,
                           ),
                         ),
-
-                        const SizedBox(width: 18),
 
                         Expanded(
                           child: markCard(
@@ -406,8 +392,10 @@ class InternalMarkPage extends StatelessWidget {
   ) {
 
     return Container(
+      width: double.infinity, // ✅ Ensures card fills the Expanded width
+
       padding:
-          const EdgeInsets.all(22),
+          const EdgeInsets.all(18),
 
       decoration: BoxDecoration(
         color: secondary,
@@ -428,7 +416,7 @@ class InternalMarkPage extends StatelessWidget {
             size: 32,
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
 
           Text(
             title,
@@ -441,7 +429,7 @@ class InternalMarkPage extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
 
           Text(
             "${mark.toInt()} $total",
@@ -499,4 +487,3 @@ class InternalMarkPage extends StatelessWidget {
     );
   }
 }
-

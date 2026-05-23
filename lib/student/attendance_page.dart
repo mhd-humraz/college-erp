@@ -85,15 +85,8 @@ class AttendancePage extends StatelessWidget {
 
                   GestureDetector(
                     onTap: () {
-
-                      Navigator.pushReplacement(
-                        context,
-
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const StudentDashboard(),
-                        ),
-                      );
+                      // MODIFIED: Pop to previous dashboard instance
+                      Navigator.pop(context);
                     },
 
                     child: Container(

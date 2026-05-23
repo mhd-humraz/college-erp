@@ -2,13 +2,20 @@
 
 import 'package:flutter/material.dart';
 
-import 'fee_payment_page.dart';
+import '../student/fee_payment_page.dart';
 
 // IMPORT PAGES
 
-import 'profile_page.dart';
-import 'assignments_page.dart';
-import 'attendance_page.dart';
+import '../student/profile_page.dart';
+import '../student/assignments_page.dart';
+import '../student/attendance_page.dart';
+import '../student/notifications_page.dart';
+import '../student/notes_page.dart';
+import '../student/timetable_page.dart';
+import '../student/leave_request_page.dart';
+import '../student/internal_marks_page.dart';
+import '../student/exam_results_page.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -135,6 +142,25 @@ class _StudentDashboardState
         break;
       case "Semester Fee":
         page = const FeePaymentPage();
+        break;
+      case "Notification":
+        page = const NotificationPage();
+        break;
+
+      case "Study Material":
+        page = const StudyMaterialPage();
+        break;
+      case "Timetable":
+        page = const TimeTablePage(department: "BCA"); // Replace "BCA" with the actual department
+        break;
+      case "Leave Request":
+        page = const LeaveRequestPage();
+        break;
+      case "Internal Score":
+        page = const InternalMarkPage();
+        break;
+      case "Exam Result":
+        page = const ExamResultPage();  
         break;
     }
 
@@ -1007,3 +1033,4 @@ class _StudentDashboardState
     );
   }
 }
+
