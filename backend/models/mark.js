@@ -1,15 +1,13 @@
 const mongoose = require('mongoose');
 
 const markSchema = new mongoose.Schema({
-  examName: { type: String, required: true },
-  subject: { type: String, required: true },
-  department: { type: String, required: true },
-  semester: { type: String, required: true },
-  records: [{
-    studentId: { type: String, required: true },
-    marks: { type: Number, default: 0 }
-  }],
-  teacherId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', required: true },
+  examType: { type: String, enum: ['internal1', 'internal2', 'assignment', 'semester'], required: true },
+  score: { type: Number, required: true },
+  maxScore: { type: Number, required: true },
+  semester: { type: Number, required: true },
+  markedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Mark', markSchema);

@@ -1,55 +1,31 @@
 const jwt = require('jsonwebtoken');
 
-module.exports = (req, res, next) => {
-  
-  // ==========================================
-  // Try multiple token sources
-  // ==========================================
-  
-  // Method 1: Standard Bearer token (Authorization: Bearer xxx)
-  let token = null;
-  const authHeader = req.headers['authorization'];
-  
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.split(' ')[1];
-  }
-  
-  // Method 2: Custom x-auth-token header (your friend's Flutter pattern)
-  if (!token && req.headers['x-auth-token']) {
-    token = req.headers['x-auth-token'];
-  }
-
-  // ==========================================
-  // No token found
-  // ==========================================
-  
-  if (!token) {
-    return res.status(401).json({ 
-      message: 'Access denied. No token provided.' 
-    });
-  }
-
-  // ==========================================
-  // Verify token
-  // ==========================================
-  
+const auth = async (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    const token = req.header('Authorization')?.replace('Bearer ', '');
     
-    console.log(`✅ Authenticated: ${decoded.name} (${decoded.role})`);
-    
-    next();
-  } catch (err) {
-    
-    if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
-        message: 'Token expired. Please login again.' 
-      });
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'No token provided. Access denied.' });
     }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'college_erp_secret_key_2024');
     
-    return res.status(401).json({ 
-      message: 'Invalid or expired token.' 
-    });
+    const User = require('../models/User');
+    const user = await User.findById(decoded.id).select('-password');
+    
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'User not found.' });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ success: false, message: 'Account is deactivated.' });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    res.status(401).json({ success: false, message: 'Token is invalid or expired.' });
   }
 };
+
+module.exports = auth;
