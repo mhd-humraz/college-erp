@@ -72,7 +72,6 @@ exports.assignHOD = async (req, res) => {
 };
 
 // @desc   Upload Staff CSV
-// @desc   Upload Staff CSV (FIXED - With Bcrypt Hashing!)
 exports.uploadStaffCSV = async (req, res) => {
   try {
     if (!req.file) {
@@ -83,108 +82,63 @@ exports.uploadStaffCSV = async (req, res) => {
     const errors = [];
     let createdCount = 0;
 
-    console.log('📁 Starting Staff CSV Upload...');
-    console.log('📄 File:', req.file.originalname);
-
     fs.createReadStream(req.file.path)
       .pipe(csv())
       .on('data', (data) => results.push(data))
       .on('end', async () => {
-
-        console.log(`📊 Total rows in CSV: ${results.length}`);
-
-        for (let i = 0; i < results.length; i++) {
+        for (const row of results) {
           try {
-            const row = results[i];
+            const { name, email, department_code, role } = row;
             
-            console.log(`\n📝 Processing row ${i + 1}:`, row);
-
-            const name = `${row["First Name"] || ''} ${row["Last Name"] || ''}`.trim();
-            const email = row["Email"]?.trim().toLowerCase();
-            const department_code = row["Department"];
-            const role = row["Role"];
-            
-            // Validation
             if (!name || !email || !department_code || !role) {
-              console.warn(`⚠️ Skipping row ${i+1}: Missing fields`);
-              errors.push(`Missing fields in row ${i+1}: ${JSON.stringify(row)}`);
+              errors.push(`Missing fields in row: ${JSON.stringify(row)}`);
               continue;
             }
 
-            // Find department
-            const dept = await Department.findOne({
-              $or: [
-                { code: department_code.toUpperCase() },
-                { name: department_code }
-              ]
-            });
-
+            // Find department by code
+            const dept = await Department.findOne({ code: department_code.toUpperCase() });
             if (!dept) {
-              console.error(`❌ Department not found: ${department_code}`);
               errors.push(`Department "${department_code}" not found for ${email}`);
               continue;
             }
 
-            // Check duplicate
+            // Check if user exists
             const existingUser = await User.findOne({ email });
             if (existingUser) {
-              console.warn(`⚠️ User already exists: ${email}`);
               errors.push(`User with email ${email} already exists`);
               continue;
             }
 
-            // ✅ FIXED: Generate & HASH password with bcrypt!
-            const plainPassword = row["Password"] || `${email.split('@')[0]}@123`;
-            const hashedPassword = await bcrypt.hash(plainPassword, 10);
-            
-            console.log(`🔐 Hashing password for ${email}`);
-            console.log(`   Original: ${plainPassword}`);
-            console.log(`   Hashed: ${hashedPassword.substring(0, 20)}...`);
+            // Create password from email or generate random
+            const password = email.split('@')[0] + '@123';
 
-            // Validate role
             const validRoles = ['admin', 'hod', 'teacher', 'class_teacher', 'student'];
             const userRole = validRoles.includes(role.toLowerCase()) ? role.toLowerCase() : 'teacher';
 
-            // ✅ Create user with HASHED password
-            const newUser = await User.create({
-              name: name,
-              email: email,
-              password: hashedPassword, // ✅ HASHED NOW!
+            await User.create({
+              name: name.trim(),
+              email: email.trim().toLowerCase(),
+              password,
               role: userRole,
-              phone: row["Phone"],
-              employeeId: row["Employee ID"],
               departmentId: dept._id
             });
 
-            console.log(`✅ SUCCESS: Created user ${email} (ID: ${newUser._id})`);
             createdCount++;
-
           } catch (err) {
-            console.error(`❌ ERROR processing row ${i+1}:`, err.message);
-            errors.push(`Error processing row ${i+1}: ${err.message}`);
+            errors.push(`Error processing ${row.email}: ${err.message}`);
           }
         }
 
-        // Cleanup temp file
+        // Delete temp file
         fs.unlinkSync(req.file.path);
-
-        console.log(`\n🎉 CSV Upload Complete:`);
-        console.log(`   ✅ Successfully created: ${createdCount}`);
-        console.log(`   ❌ Errors: ${errors.length}`);
 
         res.json({
           success: true,
-          message: `✅ Staff uploaded successfully: ${createdCount} users created`,
-          data: { 
-            createdCount, 
-            totalRows: results.length, 
-            errors: errors.slice(0, 10) // Show first 10 errors
-          }
+          message: `CSV processed! Created: ${createdCount} users`,
+          data: { createdCount, totalRows: results.length, errors }
         });
       });
-
   } catch (error) {
-    console.error('💥 Fatal error in uploadStaffCSV:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

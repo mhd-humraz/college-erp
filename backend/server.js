@@ -2,8 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
-// Add this line with your other route imports
-const teacherRoutes = require('./routes/teacherRoutes');
 
 // Connect to Database
 connectDB();
@@ -24,7 +22,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/hod', require('./routes/hodRoutes'));
 app.use('/api/teacher', require('./routes/teacherRoutes'));
 app.use('/api/student', require('./routes/studentRoutes'));
-app.use('/api/class-teacher', require('./routes/classTeacherRoutes'));
+
 // Add these new routes:
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
 app.use('/api/assignments', require('./routes/assignmentRoutes'));
@@ -33,10 +31,6 @@ app.use('/api/audit', require('./routes/auditRoutes'));
 
 // Serve static files for uploads
 app.use('/uploads/assignments', express.static('uploads/assignments'));
-
-
-// Add this line with your app.use statements
-app.use('/api/teacher', teacherRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

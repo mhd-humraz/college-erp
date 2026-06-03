@@ -4,21 +4,6 @@ import '../../providers/auth_provider.dart';
 import '../../services/api_service.dart';
 import '../../theme/app_theme.dart';
 
-// ✅ IMPORT ALL SCREENS FOR DRAWER NAVIGATION
-import '../profile_screen.dart';
-import '../settings_screen.dart';
-import '../notification_center.dart';
-import '../analytics_screen.dart';
-import '../assignment_screen.dart';
-import '../pdf_reports_screen.dart';
-import '../login_screen.dart';  // For logout
-
-// ✅ IMPORT TEACHER-SPECIFIC SCREENS
-import 'teacher_mark_attendance.dart';
-import 'teacher_upload_marks.dart';
-import 'teacher_timetable_screen.dart';
-import 'teacher_share_materials.dart';
-
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});
 
@@ -52,217 +37,19 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     }
   }
 
-  // ==================== ✅ NEW: DRAWER WIDGET ====================
-  Widget _buildDrawer() {
-    final user = context.watch<AuthProvider>().user;
-
-    return Drawer(
-      backgroundColor: AppColors.card,
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          // Drawer Header - Teacher Info
-          DrawerHeader(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.info, AppColors.info.withOpacity(0.7)],
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.white24,
-                  child: Icon(Icons.person, size: 35, color: Colors.white),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  user?['name'] ?? 'Teacher',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-                Text(
-                  user?['email'] ?? '',
-                  style: TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-                SizedBox(height: 6),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'TEACHER',
-                    style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Dashboard Section
-          _drawerItem(Icons.dashboard_outlined, 'Dashboard', () {
-            Navigator.pop(context);
-          }),
-          
-          Divider(height: 1, color: Colors.white10),
-
-          // Teaching Section
-          _drawerItem(Icons.class_outlined, 'My Classes (${_myClasses.length})', () {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text('Viewing ${_myClasses.length} assigned classes'),
-              backgroundColor: AppColors.info,
-            ));
-          }),
-
-          _drawerItem(Icons.check_circle_outline, 'Mark Attendance', () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherMarkAttendanceScreen()));
-          }),
-
-          _drawerItem(Icons.grade_outlined, 'Upload Marks', () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherUploadMarksScreen()));
-          }),
-
-          _drawerItem(Icons.calendar_today, 'My Timetable', () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherTimetableScreen()));
-          }),
-
-          _drawerItem(Icons.upload_file, 'Share Materials', () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherShareMaterialsScreen()));
-          }),
-
-          Divider(height: 1, color: Colors.white10),
-
-          // General Section
-          _drawerItem(Icons.analytics_outlined, 'Analytics', () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => AnalyticsScreen()));
-          }),
-
-          _drawerItem(Icons.notifications_outlined, 'Notifications', () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationCenter()));
-          }),
-
-          _drawerItem(Icons.assignment_outlined, 'Assignments', () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => AssignmentScreen()));
-          }),
-
-          _drawerItem(Icons.picture_as_pdf, 'PDF Reports', () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => PdfReportsScreen()));
-          }),
-
-          Divider(height: 1, color: Colors.white10),
-
-          // Account Section
-          _drawerItem(Icons.person_outline, 'My Profile', () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen()));
-          }),
-
-          _drawerItem(Icons.settings, 'Settings', () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => SettingsScreen()));
-          }),
-
-          Divider(height: 1, color: Colors.white10),
-
-          // ✅ Logout (Red Color)
-          _drawerItem(Icons.logout, 'Logout', _handleLogout, isLogout: true),
-        ],
-      ),
-    );
-  }
-
-  Widget _drawerItem(IconData icon, String title, VoidCallback onTap, {bool isLogout = false}) {
-    return ListTile(
-      leading: Icon(icon, color: isLogout ? AppColors.error : AppColors.textSecondary),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isLogout ? AppColors.error : AppColors.text,
-          fontWeight: isLogout ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      onTap: onTap,
-    );
-  }
-
-  // ==================== ✅ NEW: LOGOUT HANDLER ====================
-  void _handleLogout() {
-    Navigator.pop(context); // Close drawer first
-    
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Row(children: [
-          Icon(Icons.logout, color: AppColors.error),
-          SizedBox(width: 10),
-          Text('Logout?', style: TextStyle(color: AppColors.text)),
-        ]),
-        content: Text('Are you sure you want to logout?', style: TextStyle(color: AppColors.textSecondary)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx); // Close dialog
-              context.read<AuthProvider>().logout();
-              
-              // ✅ Navigate to Login Screen & remove all previous routes
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => LoginScreen()),
-                (route) => false,
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
-            child: Text('Logout', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      
-      // ✅ ADD DRAWER HERE
-      drawer: _buildDrawer(),
-      
       appBar: AppBar(
         title: Text('Teacher Panel', style: TextStyle(color: AppColors.text, fontWeight: FontWeight.bold)),
-        
-        // ✅ ADD MENU ICON (Top Left)
-        leading: Builder(
-          builder: (ctx) => IconButton(
-            icon: Icon(Icons.menu, color: AppColors.text),
-            onPressed: () => Scaffold.of(ctx).openDrawer(),
-          ),
-        ),
-        
+        centerTitle: true,
         actions: [
-          // ✅ FIXED LOGOUT BUTTON
           IconButton(
             icon: Icon(Icons.logout, color: AppColors.text),
-            tooltip: 'Logout',
-            onPressed: _handleLogout,  // ✅ Now shows confirmation & navigates
+            onPressed: () => context.read<AuthProvider>().logout(),
           ),
         ],
       ),
@@ -330,37 +117,22 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                     ),
                     const SizedBox(height: 22),
 
-                    // Quick Actions - ✅ NOW ALL WORKING!
+                    // Quick Actions
                     Text('Quick Actions', style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 12),
                     Wrap(
                       spacing: 10,
                       runSpacing: 10,
                       children: [
-                        // ✅ Mark Attendance -> Opens Screen
-                        _actionChip(Icons.check_circle_outline, 'Mark Attendance', AppColors.success, () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherMarkAttendanceScreen()));
-                        }),
-                        
-                        // ✅ Upload Marks -> Opens Screen
-                        _actionChip(Icons.grade_outlined, 'Upload Marks', AppColors.warning, () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherUploadMarksScreen()));
-                        }),
-                        
-                        // ✅ Share Materials -> Opens Screen
-                        _actionChip(Icons.upload_file, 'Share Materials', AppColors.info, () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherShareMaterialsScreen()));
-                        }),
-                        
-                        // ✅ View Timetable -> Opens Screen
-                        _actionChip(Icons.calendar_today, 'View Timetable', AppColors.primary, () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => TeacherTimetableScreen()));
-                        }),
+                        _actionChip(Icons.check_circle_outline, 'Mark Attendance', AppColors.success, (){}),
+                        _actionChip(Icons.grade_outlined, 'Upload Marks', AppColors.warning, (){}),
+                        _actionChip(Icons.upload_file, 'Share Materials', AppColors.info, (){}),
+                        _actionChip(Icons.calendar_today, 'View Timetable', AppColors.primary, (){}),
                       ],
                     ),
                     const SizedBox(height: 22),
 
-                    // Today's Schedule
+                    // Today's Classes
                     Text("Today's Schedule", style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 12),
                     if (_timetable.isNotEmpty)

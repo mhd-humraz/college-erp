@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   static final Dio _dio = Dio(BaseOptions(
     // ✅ CORRECT - Change TO THIS:
-    baseUrl: 'http://192.168.30.5:5000/api', 
+    baseUrl: 'http://localhost:5000/api',// Change this!
     connectTimeout: const Duration(seconds: 15),
     receiveTimeout: const Duration(seconds: 15),
     headers: {'Content-Type': 'application/json'},
