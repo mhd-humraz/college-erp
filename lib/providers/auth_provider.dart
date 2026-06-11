@@ -1,84 +1,84 @@
-import 'dart:convert';
+// lib/providers/auth_provider.dart
+//
+// Wires Flutter login/logout to POST /api/auth/login.
+// Persists the token with shared_preferences so sessions survive app restarts.
+// All other providers read token/userId/userRole from here.
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 
 class AuthProvider extends ChangeNotifier {
-  SharedPreferences _prefs;
-  bool _isLoading = false;
-  Map<String, dynamic>? _user;
   String? _token;
+  String? _userId;
+  String? _userEmail;
+  String? _userRole;
+  bool _isLoading = false;
+  String? _error;
 
-  AuthProvider(this._prefs) {
-    _loadUserData();
+  // ── Getters ──────────────────────────────────────────────────────────────
+  String? get token      => _token;
+  String? get userId     => _userId;
+  String? get userEmail  => _userEmail;
+  String? get userRole   => _userRole;
+  bool    get isLoading  => _isLoading;
+  String? get error      => _error;
+  bool    get isLoggedIn => _token != null;
+
+  // ── Boot: restore persisted session ──────────────────────────────────────
+  Future<void> tryRestoreSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token     = prefs.getString('auth_token');
+    _userId    = prefs.getString('auth_userId');
+    _userEmail = prefs.getString('auth_userEmail');
+    _userRole  = prefs.getString('auth_userRole');
+    notifyListeners();
   }
 
-  void _loadUserData() {
-    final userData = _prefs.getString('user');
-    _token = _prefs.getString('token');
-    if (userData != null) {
-      _user = jsonDecode(userData);
-    }
-  }
-
-  bool get isLoading => _isLoading;
-  Map<String, dynamic>? get user => _user;
-  String? get token => _token;
-  String? get role => _user?['role'];
-  bool get isLoggedIn => _token != null && _user != null;
-  String? get departmentId => _user?['departmentId'];
-  String? get classId => _user?['classId'];
-
-  Future<void> login(String email, String password) async {
+  // ── Login ─────────────────────────────────────────────────────────────────
+  /// Returns true on success, false on failure (error is set).
+  Future<bool> login(String email, String password) async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
 
     try {
-      final response = await ApiService.post('/auth/login', data: {
-        'email': email,
-        'password': password,
-      });
+      final data = await ApiService.login(email, password);
 
-      if (response.statusCode == 200) {
-        final data = response.data;
-        _token = data['token'];
-        _user = data['data'];
+      _token     = data['accessToken'];
+      _userId    = data['user']['id'];
+      _userEmail = data['user']['email'];
+      _userRole  = data['user']['role'];
 
-        await _prefs.setString('token', _token!);
-        await _prefs.setString('user', jsonEncode(_user));
+      // Persist for next app launch
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('auth_token',     _token!);
+      await prefs.setString('auth_userId',    _userId!);
+      await prefs.setString('auth_userEmail', _userEmail!);
+      await prefs.setString('auth_userRole',  _userRole!);
 
-        _isLoading = false;
-        notifyListeners();
-      } else {
-        _isLoading = false;
-        notifyListeners();
-        throw Exception(response.data['message'] ?? 'Login failed');
-      }
-    } catch (e) {
       _isLoading = false;
       notifyListeners();
-      rethrow;
-    }
-  }
-
-  Future<void> logout() async {
-    _token = null;
-    _user = null;
-    await _prefs.remove('token');
-    await _prefs.remove('user');
-    notifyListeners();
-  }
-
-  Future<void> refreshUser() async {
-    try {
-      final response = await ApiService.get('/auth/me');
-      if (response.statusCode == 200) {
-        _user = response.data['data'];
-        await _prefs.setString('user', jsonEncode(_user));
-        notifyListeners();
-      }
+      return true;
+    } on ApiException catch (e) {
+      _error = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
     } catch (e) {
-      print('Error refreshing user: $e');
+      _error = 'Connection failed. Is the server running?';
+      _isLoading = false;
+      notifyListeners();
+      return false;
     }
+  }
+
+  // ── Logout ────────────────────────────────────────────────────────────────
+  /// Named terminateSession to match existing dashboard call sites.
+  Future<void> terminateSession() async {
+    _token = _userId = _userEmail = _userRole = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    notifyListeners();
   }
 }

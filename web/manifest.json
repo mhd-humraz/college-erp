@@ -1,6 +1,6 @@
 {
-    "name": "college_erp",
-    "short_name": "college_erp",
+    "name": "edusphere",
+    "short_name": "edusphere",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

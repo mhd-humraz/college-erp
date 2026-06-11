@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = college_erp
+PRODUCT_NAME = edusphere
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.collegeErp
+PRODUCT_BUNDLE_IDENTIFIER = com.edusphere.edusphere
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.edusphere. All rights reserved.

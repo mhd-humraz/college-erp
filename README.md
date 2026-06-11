@@ -1,4 +1,4 @@
-# college_erp
+# edusphere
 
 A new Flutter project.
 
