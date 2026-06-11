@@ -1,0 +1,17 @@
+# render.yaml
+services:
+  - type: web
+    name: edusphere-erp-backend
+    env: node
+    plan: free # Deploys using Render's zero-cost development tier
+    buildCommand: npm install --legacy-peer-deps
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false # You will paste your MongoDB Atlas connection string here inside Render's web dashboard
+      - key: JWT_SECRET
+        sync: false # Provide your secure token encryption key string here
