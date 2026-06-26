@@ -17,40 +17,36 @@ class AcademicProvider extends ChangeNotifier {
 
   /// Fetches attendance + grades for [studentId].
   /// Existing screens call this with (studentId, token).
-  Future<void> fetchStudentDashboard(String studentId, String token) async {
-    // Skip if already loaded for this student
-    if (_performanceCache != null && !_isLoading) return;
-
+  Future<void> fetchStudentDashboard(
+    String studentId,
+    String token,
+  ) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
+      print("STUDENT ID: $studentId");
+      print("TOKEN: $token");
+
       final data = await ApiService.getStudentPerformance(
         studentId: studentId,
         token: token,
       );
 
-      // Backend returns { attendance: {...}, grades: [...] }
-      // Map to the shape screens already expect inside performanceCache
-      _performanceCache = {
-        'attendance': data['attendance'],  // { totalSlots, presentSlots, percentage }
-        'grades':     data['grades'],       // list of mark documents
-      };
+      print("API RESPONSE:");
+      print(data);
 
-      _isLoading = false;
-      notifyListeners();
-    } on ApiException catch (e) {
-      _error = e.message;
-      _isLoading = false;
-      notifyListeners();
+      _performanceCache = data;
     } catch (e) {
-      _error = 'Network error: $e';
-      _isLoading = false;
-      notifyListeners();
+      print("ACADEMIC ERROR: $e");
+      _error = e.toString();
     }
-  }
 
+    _isLoading = false;
+    notifyListeners();
+  }
+  
   /// Force a fresh fetch (call after submitting attendance etc.)
   void invalidateCache() {
     _performanceCache = null;

@@ -33,7 +33,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final auth = Provider.of<AuthProvider>(context, listen: false);
 
     // Guard: if userId is missing, there's nothing to load
-    if (auth.userId == null || auth.token == null) {
+    if (auth.studentId == null || auth.token == null)  {
       setState(() {
         _error = 'Not authenticated.';
         _loading = false;
@@ -42,10 +42,14 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     }
 
     try {
+      print("PORTFOLIO STUDENT ID: ${auth.studentId}");
+      print("PORTFOLIO TOKEN: ${auth.token}");
       final summary = await ApiService.getPortfolioSummary(
-        studentId: auth.userId!,
+        studentId: auth.studentId!,
         token: auth.token!,
       );
+      print("PORTFOLIO RESPONSE:");
+      print(summary);
       setState(() {
         _portfolioData = summary;
         _loading = false;
@@ -121,33 +125,54 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                               fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 12),
                       Expanded(
-                        child: ListView.builder(
-                          itemCount: (_portfolioData!['achievements']
-                                  as List)
-                              .length,
-                          itemBuilder: (ctx, idx) {
-                            final award = _portfolioData!['achievements']
-                                [idx];
-                            return Card(
-                              child: ListTile(
-                                leading: const Icon(
-                                    Icons.workspace_premium_rounded,
-                                    color: Colors.amber,
-                                    size: 30),
-                                title: Text(award['title'],
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold)),
-                                subtitle: Text(
-                                    'Verified by: ${award['issuer']}'),
-                                trailing: Chip(
-                                    label: Text(award['category'],
+                        child: ((_portfolioData!['achievements'] as List?) ?? [])
+                                .isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'No achievements added yet.',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              )
+                            : ListView.builder(
+                                itemCount:
+                                    (_portfolioData!['achievements'] as List)
+                                        .length,
+                                itemBuilder: (ctx, idx) {
+                                  final award =
+                                      _portfolioData!['achievements'][idx];
+
+                                  return Card(
+                                    child: ListTile(
+                                      leading: const Icon(
+                                        Icons.workspace_premium_rounded,
+                                        color: Colors.amber,
+                                        size: 30,
+                                      ),
+                                      title: Text(
+                                        award['title'] ?? '',
                                         style: const TextStyle(
-                                            fontSize: 10))),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        'Verified by: ${award['issuer'] ?? ''}',
+                                      ),
+                                      trailing: Chip(
+                                        label: Text(
+                                          award['category'] ?? '',
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
-                        ),
-                      )
+                      ),
                     ],
                   ),
                 ),

@@ -11,12 +11,14 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'dart:io';
+ 
 class ApiService {
   // ─────────────────────────────────────────────
   // CONFIGURE BASE URL HERE
   // ─────────────────────────────────────────────
-  static const String baseUrl = 'http://10.0.2.2:5000/api';
+  static const String baseUrl = 'http://10.208.24.133:5000/api';
+  static const String aiV2BaseUrl = 'http://10.208.24.133:5000/api-v2';
 
   // ─────────────────────────────────────────────
   // INTERNAL HELPERS
@@ -119,17 +121,17 @@ class ApiService {
   /// GET /api/ai-v2/predictive-risk/:studentId
   /// Returns { analytics: { currentAttendanceRate, predictedSemesterEndAttendance,
   ///                         riskLevel, recommendationText, ... } }
-  static Future<Map<String, dynamic>> getPredictiveRisk({
+ static Future<Map<String, dynamic>> getPredictiveRisk({
     required String studentId,
     required String token,
   }) async {
     final res = await http.get(
-      Uri.parse('$baseUrl/ai-v2/predictive-risk/$studentId'),
+      Uri.parse('$aiV2BaseUrl/predictive-risk/$studentId'),
       headers: _headers(token: token),
     );
+
     return _parse(res);
   }
-
   // ─────────────────────────────────────────────
   // TICKETS  →  /api/tickets/*
   // ─────────────────────────────────────────────
@@ -194,7 +196,21 @@ class ApiService {
     final body = _parse(res);
     return body['summary'] as Map<String, dynamic>;
   }
+  /// student profile is a more detailed view of the student, used in the admin panel and for generating the PDF report. It includes academic, attendance, and portfolio data in one response.
+   /// GET /api/portfolio/student-profile/:studentId
+   /// Returns { profile: { name, email, course, semester, attendance: {...}, grades: [...], achievements: [...] } }
+  static Future<Map<String, dynamic>> getStudentProfile({
+    required String studentId,
+    required String token,
+  }) async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/student/profile/$studentId'),
+      headers: _headers(token: token),
+    );
 
+    return _parse(res);
+  }
+ 
   /// POST /api/portfolio/add
   static Future<Map<String, dynamic>> addAchievement({
     required String token,
@@ -208,6 +224,29 @@ class ApiService {
     return _parse(res);
   }
 
+  static Future<void> uploadProfilePhoto({
+    required File image,
+    required String token,
+  }) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse(
+        '$baseUrl/student/upload-photo',
+      ),
+    );
+
+    request.headers['Authorization'] =
+        'Bearer $token';
+
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'photo',
+        image.path,
+      ),
+    );
+
+    await request.send();
+  }
   // ─────────────────────────────────────────────
   // FEES  →  /api/fees/*
   // ─────────────────────────────────────────────

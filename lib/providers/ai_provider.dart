@@ -41,31 +41,42 @@ class AiProvider extends ChangeNotifier {
 
   /// [studentId] is the MongoDB _id of the student document.
   /// [token] comes from AuthProvider.
-  Future<void> fetchStudentPredictiveRisk(String studentId, String token) async {
+  Future<void> fetchStudentPredictiveRisk(
+    String studentId,
+    String token,
+  ) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
+      print("AI STUDENT ID SENT: $studentId");
+
       final data = await ApiService.getPredictiveRisk(
         studentId: studentId,
         token: token,
       );
 
-      // Backend returns { analytics: { ... } }
-      final analytics = data['analytics'] as Map<String, dynamic>;
-      _currentInsight = AiInsightModel.fromJson(analytics);
+      print("AI RESPONSE:");
+      print(data);
 
-      _isLoading = false;
-      notifyListeners();
+      if (data.containsKey('analytics')) {
+        _currentInsight = AiInsightModel.fromJson(
+          data['analytics'] as Map<String, dynamic>,
+        );
+      } else {
+        _currentInsight = null;
+        _error = data['message'] ?? 'No analytics data available';
+      }
     } on ApiException catch (e) {
       _error = e.message;
-      _isLoading = false;
-      notifyListeners();
+      print("AI API ERROR: ${e.message}");
     } catch (e) {
       _error = 'Network error: $e';
-      _isLoading = false;
-      notifyListeners();
+      print("AI ERROR: $e");
     }
+
+    _isLoading = false;
+    notifyListeners();
   }
 }

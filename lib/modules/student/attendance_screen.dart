@@ -14,16 +14,26 @@ class AttendanceScreen extends StatefulWidget {
 }
 
 class _AttendanceScreenState extends State<AttendanceScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final auth = Provider.of<AuthProvider>(context, listen: false);
-      // 🚀 FIXED: Passed both required positional argument mappings (ID + Active Token context)
-      Provider.of<AcademicProvider>(context, listen: false)
-          .fetchStudentDashboard(auth.userId ?? '6a1c287549e7eb677ccd9150', auth.token ?? '');
-    });
-  }
+ @override
+    void initState() {
+      super.initState();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final auth =
+            Provider.of<AuthProvider>(context, listen: false);
+
+        print("AUTH USER ID: ${auth.studentId}");
+        print("AUTH TOKEN: ${auth.token}");
+
+        Provider.of<AcademicProvider>(
+          context,
+          listen: false,
+        ).fetchStudentDashboard(
+          auth.studentId ?? '',
+          auth.token ?? '',
+        );
+      });
+    }
 
   @override
   Widget build(BuildContext context) {

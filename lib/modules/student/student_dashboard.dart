@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/ai_provider.dart';
+import 'profile_screen.dart';
 import 'digital_id_screen.dart';
 import 'portfolio_screen.dart';
 import 'raise_ticket_screen.dart';
 import 'timetable_screen.dart';
+import 'attendance_screen.dart';
+import 'marks_screen.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -17,18 +20,30 @@ class StudentDashboard extends StatefulWidget {
 
 class _StudentDashboardState extends State<StudentDashboard> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final auth = Provider.of<AuthProvider>(context, listen: false);
-      // FIX: pass both studentId and token — no more hardcoded IDs
-      Provider.of<AiProvider>(context, listen: false)
-          .fetchStudentPredictiveRisk(
-            auth.userId ?? '',
-            auth.token ?? '',
-          );
+    void initState() {
+      super.initState();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = Provider.of<AuthProvider>(
+        context,
+        listen: false,
+      );
+
+      print("AI USER ID: ${auth.userId}");
+      print("AI STUDENT ID: ${auth.studentId}");
+      print("AI TOKEN: ${auth.token}");
+
+      Provider.of<AiProvider>(
+        context,
+        listen: false,
+      ).fetchStudentPredictiveRisk(
+        auth.studentId ?? '',
+        auth.token ?? '',
+      );
     });
-  }
+    }
+  
+
 
   @override
   Widget build(BuildContext context) {
@@ -137,30 +152,71 @@ class _StudentDashboardState extends State<StudentDashboard> {
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
               children: [
-                _buildModuleTile(context,
-                    icon: Icons.badge_outlined,
-                    title: 'Digital ID',
-                    subtitle: 'QR Verify',
-                    color: Colors.blue.shade700,
-                    destination: const DigitalIdScreen()),
-                _buildModuleTile(context,
-                    icon: Icons.folder_shared_outlined,
-                    title: 'My Portfolio',
-                    subtitle: 'Achievements',
-                    color: Colors.purple.shade700,
-                    destination: const PortfolioScreen()),
-                _buildModuleTile(context,
-                    icon: Icons.confirmation_number_outlined,
-                    title: 'Raise Ticket',
-                    subtitle: 'Help Desk',
-                    color: Colors.orange.shade800,
-                    destination: const RaiseTicketScreen()),
-                _buildModuleTile(context,
-                    icon: Icons.calendar_month_outlined,
-                    title: 'Timetable',
-                    subtitle: 'Schedule',
-                    color: Colors.green.shade700,
-                    destination: const TimetableScreen()),
+                _buildModuleTile(
+                  context,
+                  icon: Icons.badge_outlined,
+                  title: 'Digital ID',
+                  subtitle: 'QR Verify',
+                  color: Colors.blue.shade700,
+                  destination: const DigitalIdScreen(),
+                ),
+
+                _buildModuleTile(
+                  context,
+                  icon: Icons.person,
+                  title: 'Profile',
+                  subtitle: 'Student Info',
+                  color: Colors.indigo,
+                  destination: const ProfileScreen(),
+                ),
+
+                _buildModuleTile(
+                  context,
+                  icon: Icons.folder_shared_outlined,
+                  title: 'My Portfolio',
+                  subtitle: 'Achievements',
+                  color: Colors.purple.shade700,
+                  destination: const PortfolioScreen(),
+                ),
+
+                _buildModuleTile(
+                  context,
+                  icon: Icons.fact_check,
+                  title: 'Attendance',
+                  subtitle: 'View Attendance',
+                  color: Colors.teal,
+                  destination: const AttendanceScreen(),
+                ),
+
+                _buildModuleTile(
+                  context,
+                  icon: Icons.school,
+                  title: 'Marks',
+                  subtitle: 'Exam Results',
+                  color: Colors.red,
+                  destination: const MarksScreen(),
+                ),
+
+                _buildModuleTile(
+                  context,
+                  icon: Icons.confirmation_number_outlined,
+                  title: 'Raise Ticket',
+                  subtitle: 'Help Desk',
+                  color: Colors.orange.shade800,
+                  destination: const RaiseTicketScreen(),
+                ),
+
+                _buildModuleTile(
+                  context,
+                  icon: Icons.calendar_month_outlined,
+                  title: 'Timetable',
+                  subtitle: 'Schedule',
+                  color: Colors.green.shade700,
+                  destination: TimetableScreen(
+                    courseId: auth.courseId,
+                    semester: auth.semester ?? 1,
+                  ),
+                ),
               ],
             ),
           ],

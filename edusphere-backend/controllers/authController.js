@@ -1,5 +1,6 @@
 // edusphere-backend/controllers/authController.js
 const User = require('../models/User');
+const Student = require('../models/Student');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -11,31 +12,60 @@ const generateTokens = (user) => {
     );
     return { accessToken };
 };
-
+ 
 // 🚀 CORE AUTH GATEWAY: LOGIN LOGIC
 exports.login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(401).json({ error: "Invalid account identity credentials." });
-        }
+    const user = await User.findOne({ email });
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ error: "Invalid account identity credentials." });
-        }
-
-        const tokens = generateTokens(user);
-        res.status(200).json({
-            message: "Authentication successful",
-            accessToken: tokens.accessToken,
-            user: { id: user._id, email: user.email, role: user.role }
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+    if (!user) {
+      return res.status(401).json({
+        error: "Invalid account identity credentials."
+      });
     }
+
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!isMatch) {
+      return res.status(401).json({
+        error: "Invalid account identity credentials."
+      });
+    }
+
+    let studentData = null;
+
+    if (user.role === 'Student') {
+      studentData = await Student.findOne({
+        user: user._id
+      });
+    }
+
+    const tokens = generateTokens(user);
+
+    res.status(200).json({
+      message: "Authentication successful",
+      accessToken: tokens.accessToken,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+
+        studentId: studentData?._id,
+        courseId: studentData?.course,
+        semester: studentData?.semester
+      }
+    });
+
+  } catch (err) {
+    res.status(500).json({
+      error: err.message
+    });
+  }
 };
 
 // 🔄 PASSWORD UPDATE GATEWAY FOR ALL VALID ROLES

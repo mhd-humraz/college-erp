@@ -1,9 +1,3 @@
-// lib/providers/auth_provider.dart
-//
-// Wires Flutter login/logout to POST /api/auth/login.
-// Persists the token with shared_preferences so sessions survive app restarts.
-// All other providers read token/userId/userRole from here.
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
@@ -13,30 +7,40 @@ class AuthProvider extends ChangeNotifier {
   String? _userId;
   String? _userEmail;
   String? _userRole;
+  String? _courseId;
+  int? _semester;
+  String? _studentId;
   bool _isLoading = false;
   String? _error;
 
-  // ── Getters ──────────────────────────────────────────────────────────────
-  String? get token      => _token;
-  String? get userId     => _userId;
-  String? get userEmail  => _userEmail;
-  String? get userRole   => _userRole;
-  bool    get isLoading  => _isLoading;
-  String? get error      => _error;
-  bool    get isLoggedIn => _token != null;
+  // Getters
+  String? get token => _token;
+  String? get userId => _userId;
+  String? get userEmail => _userEmail;
+  String? get userRole => _userRole;
+  String? get courseId => _courseId;
+  int? get semester => _semester;
+  String? get studentId => _studentId;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+  bool get isLoggedIn => _token != null;
 
-  // ── Boot: restore persisted session ──────────────────────────────────────
+  // Restore saved session
   Future<void> tryRestoreSession() async {
     final prefs = await SharedPreferences.getInstance();
-    _token     = prefs.getString('auth_token');
-    _userId    = prefs.getString('auth_userId');
+
+    _token = prefs.getString('auth_token');
+    _userId = prefs.getString('auth_userId');
     _userEmail = prefs.getString('auth_userEmail');
-    _userRole  = prefs.getString('auth_userRole');
+    _userRole = prefs.getString('auth_userRole');
+    _courseId = prefs.getString('auth_courseId');
+    _semester = prefs.getInt('auth_semester');
+    _studentId = prefs.getString('auth_studentId');
+
     notifyListeners();
   }
 
-  // ── Login ─────────────────────────────────────────────────────────────────
-  /// Returns true on success, false on failure (error is set).
+  // Login
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     _error = null;
@@ -45,17 +49,31 @@ class AuthProvider extends ChangeNotifier {
     try {
       final data = await ApiService.login(email, password);
 
-      _token     = data['accessToken'];
-      _userId    = data['user']['id'];
+      _token = data['accessToken'];
+      _userId = data['user']['id'];
       _userEmail = data['user']['email'];
-      _userRole  = data['user']['role'];
+      _userRole = data['user']['role'];
+      _courseId = data['user']['courseId'];
+      _semester = data['user']['semester'];
+      _studentId = data['user']['studentId'];
 
-      // Persist for next app launch
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('auth_token',     _token!);
-      await prefs.setString('auth_userId',    _userId!);
+
+      await prefs.setString('auth_token', _token!);
+      await prefs.setString('auth_userId', _userId!);
       await prefs.setString('auth_userEmail', _userEmail!);
-      await prefs.setString('auth_userRole',  _userRole!);
+      await prefs.setString('auth_userRole', _userRole!);
+      if (_studentId != null) {
+        await prefs.setString('auth_studentId', _studentId!);
+      }
+
+      if (_courseId != null) {
+        await prefs.setString('auth_courseId', _courseId!);
+      }
+
+      if (_semester != null) {
+        await prefs.setInt('auth_semester', _semester!);
+      }
 
       _isLoading = false;
       notifyListeners();
@@ -73,12 +91,19 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ── Logout ────────────────────────────────────────────────────────────────
-  /// Named terminateSession to match existing dashboard call sites.
+  // Logout
   Future<void> terminateSession() async {
-    _token = _userId = _userEmail = _userRole = null;
+    _token = null;
+    _userId = null;
+    _userEmail = null;
+    _userRole = null;
+    _courseId = null;
+    _semester = null;
+    _studentId = null;
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+
     notifyListeners();
   }
 }

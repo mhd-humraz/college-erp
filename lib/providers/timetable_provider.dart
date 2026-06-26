@@ -1,45 +1,60 @@
-// lib/providers/timetable_provider.dart
-//
-// GET /api/timetable/class/:courseId/:semesterNum
-// Consumed by: timetable_screen.dart
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import 'package:http/http.dart' as http;
 
-class TimetableProvider extends ChangeNotifier {
-  List<dynamic> _currentSchedule = [];
-  bool _isLoading = false;
-  String? _error;
+class TimetableProvider with ChangeNotifier {
 
-  List<dynamic> get currentSchedule => _currentSchedule;
-  bool    get isLoading => _isLoading;
-  String? get error     => _error;
+  List<dynamic> currentSchedule = [];
+
+  bool isLoading = false;
+
+  String? error;
 
   Future<void> fetchClassSchedule(
     String courseId,
-    int semesterNum,
+    int semester,
     String token,
   ) async {
-    _isLoading = true;
-    _error = null;
+
+    isLoading = true;
+    error = null;
+
     notifyListeners();
 
     try {
-      _currentSchedule = await ApiService.getClassSchedule(
-        courseId: courseId,
-        semesterNum: semesterNum,
-        token: token,
+
+      final response = await http.get(
+        Uri.parse(
+          'http://localhost:5000/api/timetable/class/$courseId/$semester',
+        ),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
       );
-      _isLoading = false;
-      notifyListeners();
-    } on ApiException catch (e) {
-      _error = e.message;
-      _isLoading = false;
-      notifyListeners();
+
+      if (response.statusCode == 200) {
+
+        final decoded =
+            jsonDecode(response.body);
+
+        currentSchedule =
+            decoded['data'];
+
+      } else {
+
+        error =
+            'Failed to load timetable';
+
+      }
+
     } catch (e) {
-      _error = 'Network error: $e';
-      _isLoading = false;
-      notifyListeners();
+
+      error = e.toString();
+
     }
+
+    isLoading = false;
+
+    notifyListeners();
   }
 }

@@ -17,11 +17,21 @@ class _MarksScreenState extends State<MarksScreen> {
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final auth = Provider.of<AuthProvider>(context, listen: false);
-      // 🚀 FIXED: Passed both required positional parameters cleanly
-      Provider.of<AcademicProvider>(context, listen: false)
-          .fetchStudentDashboard(auth.userId ?? '6a1c287549e7eb677ccd9150', auth.token ?? '');
+      final auth =
+          Provider.of<AuthProvider>(context, listen: false);
+
+      print("AUTH USER ID: ${auth.userId}");
+      print("AUTH TOKEN: ${auth.token}");
+
+      Provider.of<AcademicProvider>(
+        context,
+        listen: false,
+      ).fetchStudentDashboard(
+        auth.studentId ?? '',
+        auth.token ?? '',
+      );
     });
   }
 
@@ -29,6 +39,8 @@ class _MarksScreenState extends State<MarksScreen> {
   Widget build(BuildContext context) {
     final academic = Provider.of<AcademicProvider>(context);
     final List grades = academic.performanceCache?['grades'] ?? [];
+    print(academic.performanceCache);
+    print(grades);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Academic Grading Ledger')),
@@ -47,7 +59,7 @@ class _MarksScreenState extends State<MarksScreen> {
                         title: Text(item['subject']['name'] ?? 'Subject Title', style: const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Text('Evaluation Class: ${item['examType']}'),
                         trailing: Text(
-                          '${item['marksObtained']} / ${item['maxMarks']}',
+                         '${(item['scores'] as List).isNotEmpty ? item['scores'][0]['marksObtained'] : 0} / ${item['maxMarks']}',
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.primaryIndigo),
                         ),
                       ),
