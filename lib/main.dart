@@ -12,10 +12,13 @@ import 'providers/academic_provider.dart';
 import 'providers/ai_provider.dart';
 import 'providers/ticket_provider.dart';
 import 'providers/timetable_provider.dart';
+import 'providers/admin_provider.dart';
 
 import 'modules/auth/login_screen.dart';
 import 'modules/student/student_dashboard.dart';
 import 'modules/teacher/teacher_dashboard.dart';
+import 'modules/admin/admin_dashboard.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,12 +30,15 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider<AuthProvider>.value(value: auth),
-        ChangeNotifierProvider(create: (_) => AcademicProvider()),
-        ChangeNotifierProvider(create: (_) => AiProvider()),
-        ChangeNotifierProvider(create: (_) => TicketProvider()),
-        ChangeNotifierProvider(create: (_) => TimetableProvider()),
-      ],
+          ChangeNotifierProvider<AuthProvider>.value(value: auth),
+          ChangeNotifierProvider(create: (_) => AcademicProvider()),
+          ChangeNotifierProvider(create: (_) => AiProvider()),
+          ChangeNotifierProvider(create: (_) => TicketProvider()),
+          ChangeNotifierProvider(create: (_) => TimetableProvider()),
+
+          // ADD THIS
+          ChangeNotifierProvider(create: (_) => AdminProvider()),
+        ],
       child: const EduSphereApp(),
     ),
   );
@@ -58,6 +64,7 @@ class EduSphereApp extends StatelessWidget {
 
       routes: {
         '/login':              (_) => const LoginScreen(),
+        '/admin-dashboard':    (_) => const AdminDashboard(), // Default to login if no session exists
         '/student-dashboard':  (_) => const StudentDashboard(),
         '/teacher-dashboard':  (_) => const TeacherDashboard(),
         // Add admin dashboard route when that screen is built
@@ -70,6 +77,8 @@ class EduSphereApp extends StatelessWidget {
       case 'Teacher':
       case 'HOD':
         return '/teacher-dashboard';
+      case 'Admin':
+        return '/admin-dashboard';  
       default:
         return '/student-dashboard';
     }
