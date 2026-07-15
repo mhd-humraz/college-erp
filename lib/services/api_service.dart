@@ -10,6 +10,7 @@
 //   • Production        → https://your-deployed-api.com
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
  
@@ -17,8 +18,8 @@ class ApiService {
   // ─────────────────────────────────────────────
   // CONFIGURE BASE URL HERE
   // ─────────────────────────────────────────────
-  static const String baseUrl = 'http://10.208.24.133:5000/api';
-  static const String aiV2BaseUrl = 'http://10.208.24.133:5000/api-v2';
+  static const String baseUrl = 'http://localhost:5000/api';
+  static const String aiV2BaseUrl = 'http://localhost:5000/api-v2';
 
   // ─────────────────────────────────────────────
   // INTERNAL HELPERS
@@ -85,20 +86,123 @@ class ApiService {
     );
     return _parse(res);
   }
-
-  /// POST /api/academic/attendance/submit   (Teacher / HOD)
-  /// body: { subjectId, facultyId, hour, date, records: [{student, isPresent}] }
-  static Future<Map<String, dynamic>> submitAttendance({
+  /// GET /api/academic/student/:studentId/results?semester=1
+  static Future<Map<String, dynamic>> getStudentSemesterResult({
+    required String studentId,
+    required int semester,
     required String token,
-    required Map<String, dynamic> payload,
   }) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/academic/attendance/submit'),
+    final res = await http.get(
+      Uri.parse(
+        '$baseUrl/academic/student/$studentId/results?semester=$semester',
+      ),
       headers: _headers(token: token),
-      body: jsonEncode(payload),
     );
+
     return _parse(res);
   }
+// teacher profile is a more detailed view of the teacher, used in the admin panel and for generating the PDF report. It includes academic, attendance, and portfolio data in one response.
+  /// GET /api/teacher/profile
+  static Future<Map<String, dynamic>>
+  getTeacherProfile(String token) async {
+
+    final response = await http.get(
+      Uri.parse("$baseUrl/teacher/profile"),
+      headers: {
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    }
+
+    throw Exception("Failed to load teacher profile");
+  }
+  
+ static Future<Map<String, dynamic>> getStudents(
+  String token,
+) async {
+  final url = Uri.parse(
+    "$baseUrl/teacher/students",
+  );
+
+  debugPrint("GET STUDENTS URL: $url");
+
+  final response = await http.get(
+    url,
+    headers: {
+      "Authorization": "Bearer $token",
+      "Content-Type": "application/json",
+    },
+  );
+
+  debugPrint(
+    "STUDENTS STATUS: ${response.statusCode}",
+  );
+
+  debugPrint(
+    "STUDENTS RESPONSE: ${response.body}",
+  );
+
+  if (response.statusCode == 200) {
+    return jsonDecode(response.body);
+  }
+
+  throw Exception(
+    "Failed to load students: "
+    "${response.statusCode} ${response.body}",
+  );
+}
+
+  static Future<Map<String, dynamic>> submitAttendance({
+    required String token,
+    required String subjectId,
+    required String facultyId,
+    required int hour,
+    required String date,
+    required List<Map<String, dynamic>> records,
+  }) async {
+    final response = await http.post(
+      Uri.parse(
+        '$baseUrl/academic/attendance/submit',
+      ),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'subjectId': subjectId,
+        'facultyId': facultyId,
+        'hour': hour,
+        'date': date,
+        'records': records,
+      }),
+    );
+
+    debugPrint(
+      'ATTENDANCE STATUS: ${response.statusCode}',
+    );
+
+    debugPrint(
+      'ATTENDANCE RESPONSE: ${response.body}',
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 ||
+        response.statusCode == 201) {
+      return data;
+    }
+
+    throw Exception(
+      data['message'] ??
+          data['error'] ??
+          'Failed to submit attendance',
+    );
+  }
+
+   
 
   /// POST /api/academic/marks/submit   (Teacher / HOD)
   /// body: { subjectId, examType, maxMarks, scores: [{student, marksObtained}] }
