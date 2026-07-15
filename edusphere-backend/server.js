@@ -15,6 +15,7 @@ const io = new Server(server, {
     } 
 });
 
+
 // Bind the socket engine initialization context globally.
 // This allows background tracking services (like notificationEngine.js) to push events cleanly.
 global.io = io;

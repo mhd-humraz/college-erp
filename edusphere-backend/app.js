@@ -4,6 +4,7 @@ const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./config/swagger'); // Import specification compiler config
 const studentRoutes = require('./routes/studentRoutes');
+const internalMarkRoutes = require("./routes/internalMarkRoutes");
 const app = express();
 
 // ==========================================
@@ -33,6 +34,8 @@ app.use('/api/principal', require('./routes/principalRoutes'));
 app.use('/api-v2', require('./routes/aiV2Routes'));
 app.use('/api/timetable', require('./routes/timetableRoutes'));
 app.use('/api/student', studentRoutes);
+app.use('/api/teacher', require("./routes/teacherRoutes"));
+app.use('/api/internal-marks', internalMarkRoutes);
 app.use('/uploads', express.static('uploads'));
 // ==========================================
 // 3. BASE SANITY TEST ROUTE

@@ -1,40 +1,96 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
+import '../models/marks_model.dart';
+import '../services/api_service.dart';
 
 class StudentProvider with ChangeNotifier {
-  final String _baseUrl = 'http://localhost:5000/api/academic';
+  List<MarksModel> _semesterResults = [];
 
-  Map<String, dynamic>? performanceData;
-  bool isLoading = false;
+  MarksSummary? _marksSummary;
 
-  Future<void> fetchPerformance(
-    String studentId,
-    String token,
-  ) async {
-    isLoading = true;
+  bool _isLoading = false;
+
+  String? _error;
+
+  List<MarksModel> get semesterResults =>
+      _semesterResults;
+
+  MarksSummary? get marksSummary =>
+      _marksSummary;
+
+  bool get isLoading =>
+      _isLoading;
+
+  String? get error =>
+      _error;
+
+  Future<void> fetchSemesterResult({
+    required String studentId,
+    required int semester,
+    required String token,
+  }) async {
+    _isLoading = true;
+    _error = null;
+
     notifyListeners();
 
     try {
-      final response = await http.get(
-        Uri.parse(
-          '$_baseUrl/student/performance/$studentId',
-        ),
-        headers: {
-          'Authorization': 'Bearer $token',
-        },
+      final data =
+          await ApiService.getStudentSemesterResult(
+        studentId: studentId,
+        semester: semester,
+        token: token,
       );
 
-      if (response.statusCode == 200) {
-        performanceData = jsonDecode(response.body);
-      }
+      final List<dynamic> resultData =
+          data['results'] ?? [];
 
-      print(response.body);
+      _semesterResults = resultData
+          .map(
+            (item) => MarksModel.fromJson(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .toList();
+
+      final summaryData = data['summary'];
+
+      if (summaryData != null) {
+        _marksSummary = MarksSummary.fromJson(
+          Map<String, dynamic>.from(
+            summaryData,
+          ),
+        );
+      } else {
+        _marksSummary = null;
+      }
+    } on ApiException catch (e) {
+      _semesterResults = [];
+
+      _marksSummary = null;
+
+      _error = e.message;
     } catch (e) {
-      print(e);
+      _semesterResults = [];
+
+      _marksSummary = null;
+
+      _error =
+          'Unable to load semester result';
     }
 
-    isLoading = false;
+    _isLoading = false;
+
+    notifyListeners();
+  }
+
+  void clearResult() {
+    _semesterResults = [];
+
+    _marksSummary = null;
+
+    _error = null;
+
     notifyListeners();
   }
 }
